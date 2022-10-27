@@ -1,9 +1,10 @@
 import { Client, registry, MissingWalletError } from 'bu-chain-client-ts'
 
+import { ExchangeRate } from "bu-chain-client-ts/buchain.exchange/types"
 import { Params } from "bu-chain-client-ts/buchain.exchange/types"
 
 
-export { Params };
+export { ExchangeRate, Params };
 
 function initClient(vuexGetters) {
 	return new Client(vuexGetters['common/env/getEnv'], vuexGetters['common/wallet/signer'])
@@ -35,8 +36,11 @@ function getStructure(template) {
 const getDefaultState = () => {
 	return {
 				Params: {},
+				ExchangeRate: {},
+				ExchangeRateAll: {},
 				
 				_Structure: {
+						ExchangeRate: getStructure(ExchangeRate.fromPartial({})),
 						Params: getStructure(Params.fromPartial({})),
 						
 		},
@@ -71,6 +75,18 @@ export default {
 						(<any> params).query=null
 					}
 			return state.Params[JSON.stringify(params)] ?? {}
+		},
+				getExchangeRate: (state) => (params = { params: {}}) => {
+					if (!(<any> params).query) {
+						(<any> params).query=null
+					}
+			return state.ExchangeRate[JSON.stringify(params)] ?? {}
+		},
+				getExchangeRateAll: (state) => (params = { params: {}}) => {
+					if (!(<any> params).query) {
+						(<any> params).query=null
+					}
+			return state.ExchangeRateAll[JSON.stringify(params)] ?? {}
 		},
 				
 		getTypeStructure: (state) => (type) => {
@@ -128,6 +144,54 @@ export default {
 		},
 		
 		
+		
+		
+		 		
+		
+		
+		async QueryExchangeRate({ commit, rootGetters, getters }, { options: { subscribe, all} = { subscribe:false, all:false}, params, query=null }) {
+			try {
+				const key = params ?? {};
+				const client = initClient(rootGetters);
+				let value= (await client.BuchainExchange.query.queryExchangeRate( key.index)).data
+				
+					
+				commit('QUERY', { query: 'ExchangeRate', key: { params: {...key}, query}, value })
+				if (subscribe) commit('SUBSCRIBE', { action: 'QueryExchangeRate', payload: { options: { all }, params: {...key},query }})
+				return getters['getExchangeRate']( { params: {...key}, query}) ?? {}
+			} catch (e) {
+				throw new Error('QueryClient:QueryExchangeRate API Node Unavailable. Could not perform query: ' + e.message)
+				
+			}
+		},
+		
+		
+		
+		
+		 		
+		
+		
+		async QueryExchangeRateAll({ commit, rootGetters, getters }, { options: { subscribe, all} = { subscribe:false, all:false}, params, query=null }) {
+			try {
+				const key = params ?? {};
+				const client = initClient(rootGetters);
+				let value= (await client.BuchainExchange.query.queryExchangeRateAll(query ?? undefined)).data
+				
+					
+				while (all && (<any> value).pagination && (<any> value).pagination.next_key!=null) {
+					let next_values=(await client.BuchainExchange.query.queryExchangeRateAll({...query ?? {}, 'pagination.key':(<any> value).pagination.next_key} as any)).data
+					value = mergeResults(value, next_values);
+				}
+				commit('QUERY', { query: 'ExchangeRateAll', key: { params: {...key}, query}, value })
+				if (subscribe) commit('SUBSCRIBE', { action: 'QueryExchangeRateAll', payload: { options: { all }, params: {...key},query }})
+				return getters['getExchangeRateAll']( { params: {...key}, query}) ?? {}
+			} catch (e) {
+				throw new Error('QueryClient:QueryExchangeRateAll API Node Unavailable. Could not perform query: ' + e.message)
+				
+			}
+		},
+		
+		
 		async sendMsgExchangeToken({ rootGetters }, { value, fee = [], memo = '' }) {
 			try {
 				const client=await initClient(rootGetters)
@@ -138,6 +202,45 @@ export default {
 					throw new Error('TxClient:MsgExchangeToken:Init Could not initialize signing client. Wallet is required.')
 				}else{
 					throw new Error('TxClient:MsgExchangeToken:Send Could not broadcast Tx: '+ e.message)
+				}
+			}
+		},
+		async sendMsgDeleteExchangeRate({ rootGetters }, { value, fee = [], memo = '' }) {
+			try {
+				const client=await initClient(rootGetters)
+				const result = await client.BuchainExchange.tx.sendMsgDeleteExchangeRate({ value, fee: {amount: fee, gas: "200000"}, memo })
+				return result
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgDeleteExchangeRate:Init Could not initialize signing client. Wallet is required.')
+				}else{
+					throw new Error('TxClient:MsgDeleteExchangeRate:Send Could not broadcast Tx: '+ e.message)
+				}
+			}
+		},
+		async sendMsgCreateExchangeRate({ rootGetters }, { value, fee = [], memo = '' }) {
+			try {
+				const client=await initClient(rootGetters)
+				const result = await client.BuchainExchange.tx.sendMsgCreateExchangeRate({ value, fee: {amount: fee, gas: "200000"}, memo })
+				return result
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgCreateExchangeRate:Init Could not initialize signing client. Wallet is required.')
+				}else{
+					throw new Error('TxClient:MsgCreateExchangeRate:Send Could not broadcast Tx: '+ e.message)
+				}
+			}
+		},
+		async sendMsgUpdateExchangeRate({ rootGetters }, { value, fee = [], memo = '' }) {
+			try {
+				const client=await initClient(rootGetters)
+				const result = await client.BuchainExchange.tx.sendMsgUpdateExchangeRate({ value, fee: {amount: fee, gas: "200000"}, memo })
+				return result
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgUpdateExchangeRate:Init Could not initialize signing client. Wallet is required.')
+				}else{
+					throw new Error('TxClient:MsgUpdateExchangeRate:Send Could not broadcast Tx: '+ e.message)
 				}
 			}
 		},
@@ -152,6 +255,45 @@ export default {
 					throw new Error('TxClient:MsgExchangeToken:Init Could not initialize signing client. Wallet is required.')
 				} else{
 					throw new Error('TxClient:MsgExchangeToken:Create Could not create message: ' + e.message)
+				}
+			}
+		},
+		async MsgDeleteExchangeRate({ rootGetters }, { value }) {
+			try {
+				const client=initClient(rootGetters)
+				const msg = await client.BuchainExchange.tx.msgDeleteExchangeRate({value})
+				return msg
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgDeleteExchangeRate:Init Could not initialize signing client. Wallet is required.')
+				} else{
+					throw new Error('TxClient:MsgDeleteExchangeRate:Create Could not create message: ' + e.message)
+				}
+			}
+		},
+		async MsgCreateExchangeRate({ rootGetters }, { value }) {
+			try {
+				const client=initClient(rootGetters)
+				const msg = await client.BuchainExchange.tx.msgCreateExchangeRate({value})
+				return msg
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgCreateExchangeRate:Init Could not initialize signing client. Wallet is required.')
+				} else{
+					throw new Error('TxClient:MsgCreateExchangeRate:Create Could not create message: ' + e.message)
+				}
+			}
+		},
+		async MsgUpdateExchangeRate({ rootGetters }, { value }) {
+			try {
+				const client=initClient(rootGetters)
+				const msg = await client.BuchainExchange.tx.msgUpdateExchangeRate({value})
+				return msg
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgUpdateExchangeRate:Init Could not initialize signing client. Wallet is required.')
+				} else{
+					throw new Error('TxClient:MsgUpdateExchangeRate:Create Could not create message: ' + e.message)
 				}
 			}
 		},

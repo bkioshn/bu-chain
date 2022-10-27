@@ -1,6 +1,7 @@
 syntax = "proto3";
 package buchain.exchange;
 
+import "buchain/exchange/exchange_rate.proto";
 // this line is used by starport scaffolding # proto/tx/import
 import "cosmos/base/v1beta1/coin.proto";
 import "gogoproto/gogo.proto";
@@ -10,6 +11,9 @@ option go_package = "bu-chain/x/exchange/types";
 // Msg defines the Msg service.
 service Msg {
       rpc ExchangeToken(MsgExchangeToken) returns (MsgExchangeTokenResponse);
+  rpc CreateExchangeRate(MsgCreateExchangeRate) returns (MsgCreateExchangeRateResponse);
+  rpc UpdateExchangeRate(MsgUpdateExchangeRate) returns (MsgUpdateExchangeRateResponse);
+  rpc DeleteExchangeRate(MsgDeleteExchangeRate) returns (MsgDeleteExchangeRateResponse);
 // this line is used by starport scaffolding # proto/tx/rpc
 }
 
@@ -22,5 +26,27 @@ message MsgExchangeToken {
 
 message MsgExchangeTokenResponse {
 }
+
+message MsgCreateExchangeRate {
+  string creator = 1;
+  string index = 2;
+
+  string rate = 3;
+}
+message MsgCreateExchangeRateResponse {}
+
+message MsgUpdateExchangeRate {
+  string creator = 1;
+  string index = 2;
+
+  string rate = 3;
+}
+message MsgUpdateExchangeRateResponse {}
+
+message MsgDeleteExchangeRate {
+  string creator = 1;
+  string index = 2;
+}
+message MsgDeleteExchangeRateResponse {}
 
 // this line is used by starport scaffolding # proto/tx/message

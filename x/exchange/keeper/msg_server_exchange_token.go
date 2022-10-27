@@ -3,6 +3,9 @@ package keeper
 import (
 	"context"
 	"errors"
+	"math"
+	"strconv"
+	"strings"
 
 	"bu-chain/x/exchange/types"
 
@@ -13,27 +16,55 @@ func (k msgServer) ExchangeToken(goCtx context.Context, msg *types.MsgExchangeTo
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	// TODO: Handling the message
-	_ = ctx
-	owner, _ := sdk.AccAddressFromBech32(msg.Creator)
-	receiver, _ := sdk.AccAddressFromBech32(msg.Receiver)
-	amount := sdk.Coins{msg.Denom}
-
-	exchangeDenom := k.bankKeeper.GetBalance(ctx, receiver, msg.ExchangeDenom)
-	if exchangeDenom.Amount.LT(msg.Denom.Amount) {
-		return nil, errors.New(msg.Denom.Amount.String() + ", " + exchangeDenom.Amount.String() + " not enough amount")
-	}
-
-	err := k.bankKeeper.SendCoins(ctx, owner, receiver, amount)
+	// Check err
+	owner, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
 		return nil, err
 	}
 
-	exchangeAmount := sdk.Coins{sdk.NewInt64Coin(msg.ExchangeDenom, msg.Denom.Amount.Int64())}
-	// Change name
-	err2 := k.bankKeeper.SendCoins(ctx, receiver, owner, exchangeAmount)
-	if err2 != nil {
-		return nil, err2
+	receiver, err := sdk.AccAddressFromBech32(msg.Receiver)
+	if err != nil {
+		return nil, err
+	}
+
+	amount := sdk.NewCoins(msg.Denom)
+
+	exchangePair := msg.Denom.Denom + "-" + msg.ExchangeDenom
+	rate, isFound := k.GetExchangeRate(ctx, exchangePair)
+	exRate, err := strconv.ParseFloat(rate.Rate, 64)
+
+	if strings.Compare(msg.Denom.Denom, msg.ExchangeDenom) == 1 {
+		exchangePair = msg.ExchangeDenom + "-" + msg.Denom.Denom
+		rate, isFound = k.GetExchangeRate(ctx, exchangePair)
+		if !isFound {
+			return nil, errors.New("Token pair rate not found")
+		}
+		exRate, err = strconv.ParseFloat(rate.Rate, 64)
+		exRate = 1 / exRate
+	}
+	exRate64 := uint64(exRate * math.Pow10(3))
+
+	if !isFound {
+		return nil, errors.New("Token pair rate not found")
+	}
+
+	// Receiver get amount
+	err = k.bankKeeper.SendCoins(ctx, owner, receiver, amount)
+	if err != nil {
+		return nil, err
+	}
+
+	// Owner get amount
+	exchangeAmount := sdk.Coins{sdk.NewInt64Coin(msg.ExchangeDenom, msg.Denom.Amount.Int64()*int64(exRate64)/int64(math.Pow10(3)))}
+	err = k.bankKeeper.SendCoins(ctx, receiver, owner, exchangeAmount)
+	if err != nil {
+		return nil, err
 	}
 
 	return &types.MsgExchangeTokenResponse{}, nil
 }
+
+/*
+./bu-chaind tx exchange exchange-token cosmos1hq3u7cpuvzh3ep5ke9elv55xxpalhqf372wr94 10bubu ngum --from alice
+./bu-chaind tx exchange create-exchange-rate bubu-ngum 10 --from alice
+*/

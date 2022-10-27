@@ -9,12 +9,20 @@ import (
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgExchangeToken{}, "exchange/ExchangeToken", nil)
+	cdc.RegisterConcrete(&MsgCreateExchangeRate{}, "exchange/CreateExchangeRate", nil)
+	cdc.RegisterConcrete(&MsgUpdateExchangeRate{}, "exchange/UpdateExchangeRate", nil)
+	cdc.RegisterConcrete(&MsgDeleteExchangeRate{}, "exchange/DeleteExchangeRate", nil)
 	// this line is used by starport scaffolding # 2
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgExchangeToken{},
+	)
+	registry.RegisterImplementations((*sdk.Msg)(nil),
+		&MsgCreateExchangeRate{},
+		&MsgUpdateExchangeRate{},
+		&MsgDeleteExchangeRate{},
 	)
 	// this line is used by starport scaffolding # 3
 

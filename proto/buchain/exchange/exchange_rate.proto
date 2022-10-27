@@ -1,0 +1,10 @@
+syntax = "proto3";
+package buchain.exchange;
+
+option go_package = "bu-chain/x/exchange/types";
+
+message ExchangeRate {
+  string index = 1; 
+  string rate = 2; 
+  string creator = 3;
+}

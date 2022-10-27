@@ -28,6 +28,18 @@ const (
 	// TODO: Determine the simulation weight value
 	defaultWeightMsgExchangeToken int = 100
 
+	opWeightMsgCreateExchangeRate = "op_weight_msg_exchange_rate"
+	// TODO: Determine the simulation weight value
+	defaultWeightMsgCreateExchangeRate int = 100
+
+	opWeightMsgUpdateExchangeRate = "op_weight_msg_exchange_rate"
+	// TODO: Determine the simulation weight value
+	defaultWeightMsgUpdateExchangeRate int = 100
+
+	opWeightMsgDeleteExchangeRate = "op_weight_msg_exchange_rate"
+	// TODO: Determine the simulation weight value
+	defaultWeightMsgDeleteExchangeRate int = 100
+
 	// this line is used by starport scaffolding # simapp/module/const
 )
 
@@ -39,6 +51,16 @@ func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 	}
 	exchangeGenesis := types.GenesisState{
 		Params: types.DefaultParams(),
+		ExchangeRateList: []types.ExchangeRate{
+			{
+				Creator: sample.AccAddress(),
+				Index:   "0",
+			},
+			{
+				Creator: sample.AccAddress(),
+				Index:   "1",
+			},
+		},
 		// this line is used by starport scaffolding # simapp/module/genesisState
 	}
 	simState.GenState[types.ModuleName] = simState.Cdc.MustMarshalJSON(&exchangeGenesis)
@@ -71,6 +93,39 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 	operations = append(operations, simulation.NewWeightedOperation(
 		weightMsgExchangeToken,
 		exchangesimulation.SimulateMsgExchangeToken(am.accountKeeper, am.bankKeeper, am.keeper),
+	))
+
+	var weightMsgCreateExchangeRate int
+	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgCreateExchangeRate, &weightMsgCreateExchangeRate, nil,
+		func(_ *rand.Rand) {
+			weightMsgCreateExchangeRate = defaultWeightMsgCreateExchangeRate
+		},
+	)
+	operations = append(operations, simulation.NewWeightedOperation(
+		weightMsgCreateExchangeRate,
+		exchangesimulation.SimulateMsgCreateExchangeRate(am.accountKeeper, am.bankKeeper, am.keeper),
+	))
+
+	var weightMsgUpdateExchangeRate int
+	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgUpdateExchangeRate, &weightMsgUpdateExchangeRate, nil,
+		func(_ *rand.Rand) {
+			weightMsgUpdateExchangeRate = defaultWeightMsgUpdateExchangeRate
+		},
+	)
+	operations = append(operations, simulation.NewWeightedOperation(
+		weightMsgUpdateExchangeRate,
+		exchangesimulation.SimulateMsgUpdateExchangeRate(am.accountKeeper, am.bankKeeper, am.keeper),
+	))
+
+	var weightMsgDeleteExchangeRate int
+	simState.AppParams.GetOrGenerate(simState.Cdc, opWeightMsgDeleteExchangeRate, &weightMsgDeleteExchangeRate, nil,
+		func(_ *rand.Rand) {
+			weightMsgDeleteExchangeRate = defaultWeightMsgDeleteExchangeRate
+		},
+	)
+	operations = append(operations, simulation.NewWeightedOperation(
+		weightMsgDeleteExchangeRate,
+		exchangesimulation.SimulateMsgDeleteExchangeRate(am.accountKeeper, am.bankKeeper, am.keeper),
 	))
 
 	// this line is used by starport scaffolding # simapp/module/operation
