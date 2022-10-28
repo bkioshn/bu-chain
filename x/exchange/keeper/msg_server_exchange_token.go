@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"errors"
 	"math"
 	"strconv"
 	"strings"
@@ -37,7 +36,7 @@ func (k msgServer) ExchangeToken(goCtx context.Context, msg *types.MsgExchangeTo
 		exchangePair = msg.ExchangeDenom + "-" + msg.Denom.Denom
 		rate, isFound = k.GetExchangeRate(ctx, exchangePair)
 		if !isFound {
-			return nil, errors.New("Token pair rate not found")
+			return nil, types.ErrTokenPairNotFound
 		}
 		exRate, err = strconv.ParseFloat(rate.Rate, 64)
 		if err != nil {
@@ -47,7 +46,7 @@ func (k msgServer) ExchangeToken(goCtx context.Context, msg *types.MsgExchangeTo
 		exRate = 1 / exRate
 	}
 	if !isFound {
-		return nil, errors.New("Token pair rate not found")
+		return nil, types.ErrTokenPairNotFound
 	}
 	if err != nil {
 		return nil, err
@@ -56,7 +55,7 @@ func (k msgServer) ExchangeToken(goCtx context.Context, msg *types.MsgExchangeTo
 	exRate64 := uint64(exRate * math.Pow10(3))
 
 	if !isFound {
-		return nil, errors.New("Token pair rate not found")
+		return nil, types.ErrTokenPairNotFound
 	}
 
 	// Receiver get amount

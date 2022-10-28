@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -19,7 +18,7 @@ func (k msgServer) CreateExchangeRate(goCtx context.Context, msg *types.MsgCreat
 	// Check whether the tokens is a pair or not
 	tokens := strings.Split(msg.Index, "-")
 	if len(tokens) != 2 {
-		return nil, errors.New("Input tokens need to be in pair")
+		return nil, types.ErrTokenShouldBePair
 	}
 
 	var key string

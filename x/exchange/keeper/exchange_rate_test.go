@@ -8,6 +8,7 @@ import (
 	"bu-chain/testutil/nullify"
 	"bu-chain/x/exchange/keeper"
 	"bu-chain/x/exchange/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 )
@@ -25,6 +26,28 @@ func createNExchangeRate(keeper *keeper.Keeper, ctx sdk.Context, n int) []types.
 	return items
 }
 
+func createMockExchangeRate(keeper *keeper.Keeper, ctx sdk.Context) {
+	mockExchanges := []types.ExchangeRate{
+		{
+			Index:   "bubu-ngum",
+			Rate:    "10",
+			Creator: "alice",
+		},
+		{
+			Index:   "bubu-day",
+			Rate:    "0.1",
+			Creator: "alice",
+		},
+		{
+			Index:   "day-ngum",
+			Rate:    "100",
+			Creator: "alice",
+		},
+	}
+	for i := range mockExchanges {
+		keeper.SetExchangeRate(ctx, mockExchanges[i])
+	}
+}
 func TestExchangeRateGet(t *testing.T) {
 	keeper, ctx := keepertest.ExchangeKeeper(t)
 	items := createNExchangeRate(keeper, ctx, 10)

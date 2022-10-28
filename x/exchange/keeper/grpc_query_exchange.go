@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"errors"
 	"math"
 	"strconv"
 	"strings"
@@ -77,7 +76,7 @@ func (k Keeper) ExchangeAmount(c context.Context, req *types.QueryExchangeAmount
 		exchangePair = req.ExchangeToken + "-" + req.Denom
 		rate, isFound = k.GetExchangeRate(ctx, exchangePair)
 		if !isFound {
-			return nil, errors.New("Token pair rate not found")
+			return nil, types.ErrTokenPairNotFound
 		}
 		exRate, err = strconv.ParseFloat(rate.Rate, 64)
 		if err != nil {
@@ -86,7 +85,7 @@ func (k Keeper) ExchangeAmount(c context.Context, req *types.QueryExchangeAmount
 		exRate = 1 / exRate
 	}
 	if !isFound {
-		return nil, errors.New("Token pair rate not found")
+		return nil, types.ErrTokenPairNotFound
 	}
 	if err != nil {
 		return nil, err
@@ -98,6 +97,10 @@ func (k Keeper) ExchangeAmount(c context.Context, req *types.QueryExchangeAmount
 }
 
 func (k Keeper) ExchangePairs(c context.Context, req *types.QueryExchangePairsRequest) (*types.QueryExchangePairsResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
+
 	var exchangePair []string
 	ctx := sdk.UnwrapSDKContext(c)
 	store := ctx.KVStore(k.storeKey)
