@@ -40,8 +40,19 @@ func (k msgServer) ExchangeToken(goCtx context.Context, msg *types.MsgExchangeTo
 			return nil, errors.New("Token pair rate not found")
 		}
 		exRate, err = strconv.ParseFloat(rate.Rate, 64)
+		if err != nil {
+			return nil, err
+		}
+
 		exRate = 1 / exRate
 	}
+	if !isFound {
+		return nil, errors.New("Token pair rate not found")
+	}
+	if err != nil {
+		return nil, err
+	}
+
 	exRate64 := uint64(exRate * math.Pow10(3))
 
 	if !isFound {
@@ -63,8 +74,3 @@ func (k msgServer) ExchangeToken(goCtx context.Context, msg *types.MsgExchangeTo
 
 	return &types.MsgExchangeTokenResponse{}, nil
 }
-
-/*
-./bu-chaind tx exchange exchange-token cosmos1hq3u7cpuvzh3ep5ke9elv55xxpalhqf372wr94 10bubu ngum --from alice
-./bu-chaind tx exchange create-exchange-rate bubu-ngum 10 --from alice
-*/

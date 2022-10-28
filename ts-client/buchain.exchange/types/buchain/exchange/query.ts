@@ -1,4 +1,5 @@
 /* eslint-disable */
+import Long from "long";
 import _m0 from "protobufjs/minimal";
 import { PageRequest, PageResponse } from "../../cosmos/base/query/v1beta1/pagination";
 import { ExchangeRate } from "./exchange_rate";
@@ -31,6 +32,17 @@ export interface QueryAllExchangeRateRequest {
 export interface QueryAllExchangeRateResponse {
   exchangeRate: ExchangeRate[];
   pagination: PageResponse | undefined;
+}
+
+export interface QueryExchangeAmountRequest {
+  /** cosmos.base.v1beta1.Coin denom = 1 [(gogoproto.nullable) = false]; */
+  denom: string;
+  amount: string;
+  exchangeToken: string;
+}
+
+export interface QueryExchangeAmountResponse {
+  amount: number;
 }
 
 function createBaseQueryParamsRequest(): QueryParamsRequest {
@@ -335,6 +347,120 @@ export const QueryAllExchangeRateResponse = {
   },
 };
 
+function createBaseQueryExchangeAmountRequest(): QueryExchangeAmountRequest {
+  return { denom: "", amount: "", exchangeToken: "" };
+}
+
+export const QueryExchangeAmountRequest = {
+  encode(message: QueryExchangeAmountRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.denom !== "") {
+      writer.uint32(10).string(message.denom);
+    }
+    if (message.amount !== "") {
+      writer.uint32(18).string(message.amount);
+    }
+    if (message.exchangeToken !== "") {
+      writer.uint32(26).string(message.exchangeToken);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): QueryExchangeAmountRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseQueryExchangeAmountRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.denom = reader.string();
+          break;
+        case 2:
+          message.amount = reader.string();
+          break;
+        case 3:
+          message.exchangeToken = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): QueryExchangeAmountRequest {
+    return {
+      denom: isSet(object.denom) ? String(object.denom) : "",
+      amount: isSet(object.amount) ? String(object.amount) : "",
+      exchangeToken: isSet(object.exchangeToken) ? String(object.exchangeToken) : "",
+    };
+  },
+
+  toJSON(message: QueryExchangeAmountRequest): unknown {
+    const obj: any = {};
+    message.denom !== undefined && (obj.denom = message.denom);
+    message.amount !== undefined && (obj.amount = message.amount);
+    message.exchangeToken !== undefined && (obj.exchangeToken = message.exchangeToken);
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<QueryExchangeAmountRequest>, I>>(object: I): QueryExchangeAmountRequest {
+    const message = createBaseQueryExchangeAmountRequest();
+    message.denom = object.denom ?? "";
+    message.amount = object.amount ?? "";
+    message.exchangeToken = object.exchangeToken ?? "";
+    return message;
+  },
+};
+
+function createBaseQueryExchangeAmountResponse(): QueryExchangeAmountResponse {
+  return { amount: 0 };
+}
+
+export const QueryExchangeAmountResponse = {
+  encode(message: QueryExchangeAmountResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.amount !== 0) {
+      writer.uint32(8).uint64(message.amount);
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): QueryExchangeAmountResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseQueryExchangeAmountResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.amount = longToNumber(reader.uint64() as Long);
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): QueryExchangeAmountResponse {
+    return { amount: isSet(object.amount) ? Number(object.amount) : 0 };
+  },
+
+  toJSON(message: QueryExchangeAmountResponse): unknown {
+    const obj: any = {};
+    message.amount !== undefined && (obj.amount = Math.round(message.amount));
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<QueryExchangeAmountResponse>, I>>(object: I): QueryExchangeAmountResponse {
+    const message = createBaseQueryExchangeAmountResponse();
+    message.amount = object.amount ?? 0;
+    return message;
+  },
+};
+
 /** Query defines the gRPC querier service. */
 export interface Query {
   /** Parameters queries the parameters of the module. */
@@ -343,6 +469,8 @@ export interface Query {
   ExchangeRate(request: QueryGetExchangeRateRequest): Promise<QueryGetExchangeRateResponse>;
   /** Queries a list of ExchangeRate items. */
   ExchangeRateAll(request: QueryAllExchangeRateRequest): Promise<QueryAllExchangeRateResponse>;
+  /** Queries a list of ExchangeAmount items. */
+  ExchangeAmount(request: QueryExchangeAmountRequest): Promise<QueryExchangeAmountResponse>;
 }
 
 export class QueryClientImpl implements Query {
@@ -352,6 +480,7 @@ export class QueryClientImpl implements Query {
     this.Params = this.Params.bind(this);
     this.ExchangeRate = this.ExchangeRate.bind(this);
     this.ExchangeRateAll = this.ExchangeRateAll.bind(this);
+    this.ExchangeAmount = this.ExchangeAmount.bind(this);
   }
   Params(request: QueryParamsRequest): Promise<QueryParamsResponse> {
     const data = QueryParamsRequest.encode(request).finish();
@@ -370,11 +499,36 @@ export class QueryClientImpl implements Query {
     const promise = this.rpc.request("buchain.exchange.Query", "ExchangeRateAll", data);
     return promise.then((data) => QueryAllExchangeRateResponse.decode(new _m0.Reader(data)));
   }
+
+  ExchangeAmount(request: QueryExchangeAmountRequest): Promise<QueryExchangeAmountResponse> {
+    const data = QueryExchangeAmountRequest.encode(request).finish();
+    const promise = this.rpc.request("buchain.exchange.Query", "ExchangeAmount", data);
+    return promise.then((data) => QueryExchangeAmountResponse.decode(new _m0.Reader(data)));
+  }
 }
 
 interface Rpc {
   request(service: string, method: string, data: Uint8Array): Promise<Uint8Array>;
 }
+
+declare var self: any | undefined;
+declare var window: any | undefined;
+declare var global: any | undefined;
+var globalThis: any = (() => {
+  if (typeof globalThis !== "undefined") {
+    return globalThis;
+  }
+  if (typeof self !== "undefined") {
+    return self;
+  }
+  if (typeof window !== "undefined") {
+    return window;
+  }
+  if (typeof global !== "undefined") {
+    return global;
+  }
+  throw "Unable to locate global object";
+})();
 
 type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
 
@@ -386,6 +540,18 @@ export type DeepPartial<T> = T extends Builtin ? T
 type KeysOfUnion<T> = T extends T ? keyof T : never;
 export type Exact<P, I extends P> = P extends Builtin ? P
   : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+
+function longToNumber(long: Long): number {
+  if (long.gt(Number.MAX_SAFE_INTEGER)) {
+    throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
+  }
+  return long.toNumber();
+}
+
+if (_m0.util.Long !== Long) {
+  _m0.util.Long = Long as any;
+  _m0.configure();
+}
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;

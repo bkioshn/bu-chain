@@ -43,6 +43,11 @@ export interface ExchangeQueryAllExchangeRateResponse {
   pagination?: V1Beta1PageResponse;
 }
 
+export interface ExchangeQueryExchangeAmountResponse {
+  /** @format uint64 */
+  amount?: string;
+}
+
 export interface ExchangeQueryGetExchangeRateResponse {
   exchangeRate?: ExchangeExchangeRate;
 }
@@ -274,6 +279,22 @@ export class HttpClient<SecurityDataType = unknown> {
  * @version version not set
  */
 export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
+  /**
+   * No description
+   *
+   * @tags Query
+   * @name QueryExchangeAmount
+   * @summary Queries a list of ExchangeAmount items.
+   * @request GET:/bu-chain/exchange/exchange_amount/{denom}/{amount}/{exchangeToken}
+   */
+  queryExchangeAmount = (denom: string, amount: string, exchangeToken: string, params: RequestParams = {}) =>
+    this.request<ExchangeQueryExchangeAmountResponse, RpcStatus>({
+      path: `/bu-chain/exchange/exchange_amount/${denom}/${amount}/${exchangeToken}`,
+      method: "GET",
+      format: "json",
+      ...params,
+    });
+
   /**
    * No description
    *

@@ -10,7 +10,7 @@ option go_package = "bu-chain/x/exchange/types";
 
 // Msg defines the Msg service.
 service Msg {
-      rpc ExchangeToken(MsgExchangeToken) returns (MsgExchangeTokenResponse);
+  rpc ExchangeToken(MsgExchangeToken) returns (MsgExchangeTokenResponse);
   rpc CreateExchangeRate(MsgCreateExchangeRate) returns (MsgCreateExchangeRateResponse);
   rpc UpdateExchangeRate(MsgUpdateExchangeRate) returns (MsgUpdateExchangeRateResponse);
   rpc DeleteExchangeRate(MsgDeleteExchangeRate) returns (MsgDeleteExchangeRateResponse);

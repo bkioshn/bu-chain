@@ -4,6 +4,53 @@ info:
   name: ''
   description: ''
 paths:
+  /bu-chain/exchange/exchange_amount/{denom}/{amount}/{exchangeToken}:
+    get:
+      summary: Queries a list of ExchangeAmount items.
+      operationId: BuchainExchangeExchangeAmount
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              amount:
+                type: string
+                format: uint64
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: denom
+          description: cosmos.base.v1beta1.Coin denom = 1 [(gogoproto.nullable) = false];
+          in: path
+          required: true
+          type: string
+        - name: amount
+          in: path
+          required: true
+          type: string
+        - name: exchangeToken
+          in: path
+          required: true
+          type: string
+      tags:
+        - Query
   /bu-chain/exchange/exchange_rate:
     get:
       summary: Queries a list of ExchangeRate items.
@@ -45315,6 +45362,12 @@ definitions:
                    repeated Bar results = 1;
                    PageResponse page = 2;
            }
+  buchain.exchange.QueryExchangeAmountResponse:
+    type: object
+    properties:
+      amount:
+        type: string
+        format: uint64
   buchain.exchange.QueryGetExchangeRateResponse:
     type: object
     properties:
