@@ -254,19 +254,6 @@ export default {
 		},
 		
 		
-		async sendMsgDeleteExchangeRate({ rootGetters }, { value, fee = [], memo = '' }) {
-			try {
-				const client=await initClient(rootGetters)
-				const result = await client.BuchainExchange.tx.sendMsgDeleteExchangeRate({ value, fee: {amount: fee, gas: "200000"}, memo })
-				return result
-			} catch (e) {
-				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgDeleteExchangeRate:Init Could not initialize signing client. Wallet is required.')
-				}else{
-					throw new Error('TxClient:MsgDeleteExchangeRate:Send Could not broadcast Tx: '+ e.message)
-				}
-			}
-		},
 		async sendMsgCreateExchangeRate({ rootGetters }, { value, fee = [], memo = '' }) {
 			try {
 				const client=await initClient(rootGetters)
@@ -306,20 +293,20 @@ export default {
 				}
 			}
 		},
-		
-		async MsgDeleteExchangeRate({ rootGetters }, { value }) {
+		async sendMsgDeleteExchangeRate({ rootGetters }, { value, fee = [], memo = '' }) {
 			try {
-				const client=initClient(rootGetters)
-				const msg = await client.BuchainExchange.tx.msgDeleteExchangeRate({value})
-				return msg
+				const client=await initClient(rootGetters)
+				const result = await client.BuchainExchange.tx.sendMsgDeleteExchangeRate({ value, fee: {amount: fee, gas: "200000"}, memo })
+				return result
 			} catch (e) {
 				if (e == MissingWalletError) {
 					throw new Error('TxClient:MsgDeleteExchangeRate:Init Could not initialize signing client. Wallet is required.')
-				} else{
-					throw new Error('TxClient:MsgDeleteExchangeRate:Create Could not create message: ' + e.message)
+				}else{
+					throw new Error('TxClient:MsgDeleteExchangeRate:Send Could not broadcast Tx: '+ e.message)
 				}
 			}
 		},
+		
 		async MsgCreateExchangeRate({ rootGetters }, { value }) {
 			try {
 				const client=initClient(rootGetters)
@@ -356,6 +343,19 @@ export default {
 					throw new Error('TxClient:MsgExchangeToken:Init Could not initialize signing client. Wallet is required.')
 				} else{
 					throw new Error('TxClient:MsgExchangeToken:Create Could not create message: ' + e.message)
+				}
+			}
+		},
+		async MsgDeleteExchangeRate({ rootGetters }, { value }) {
+			try {
+				const client=initClient(rootGetters)
+				const msg = await client.BuchainExchange.tx.msgDeleteExchangeRate({value})
+				return msg
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgDeleteExchangeRate:Init Could not initialize signing client. Wallet is required.')
+				} else{
+					throw new Error('TxClient:MsgDeleteExchangeRate:Create Could not create message: ' + e.message)
 				}
 			}
 		},
