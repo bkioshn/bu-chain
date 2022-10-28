@@ -7,13 +7,19 @@ import { msgTypes } from './registry';
 import { IgniteClient } from "../client"
 import { MissingWalletError } from "../helpers"
 import { Api } from "./rest";
+import { MsgExchangeToken } from "./types/buchain/exchange/tx";
 import { MsgUpdateExchangeRate } from "./types/buchain/exchange/tx";
 import { MsgCreateExchangeRate } from "./types/buchain/exchange/tx";
-import { MsgExchangeToken } from "./types/buchain/exchange/tx";
 import { MsgDeleteExchangeRate } from "./types/buchain/exchange/tx";
 
 
-export { MsgUpdateExchangeRate, MsgCreateExchangeRate, MsgExchangeToken, MsgDeleteExchangeRate };
+export { MsgExchangeToken, MsgUpdateExchangeRate, MsgCreateExchangeRate, MsgDeleteExchangeRate };
+
+type sendMsgExchangeTokenParams = {
+  value: MsgExchangeToken,
+  fee?: StdFee,
+  memo?: string
+};
 
 type sendMsgUpdateExchangeRateParams = {
   value: MsgUpdateExchangeRate,
@@ -27,12 +33,6 @@ type sendMsgCreateExchangeRateParams = {
   memo?: string
 };
 
-type sendMsgExchangeTokenParams = {
-  value: MsgExchangeToken,
-  fee?: StdFee,
-  memo?: string
-};
-
 type sendMsgDeleteExchangeRateParams = {
   value: MsgDeleteExchangeRate,
   fee?: StdFee,
@@ -40,16 +40,16 @@ type sendMsgDeleteExchangeRateParams = {
 };
 
 
+type msgExchangeTokenParams = {
+  value: MsgExchangeToken,
+};
+
 type msgUpdateExchangeRateParams = {
   value: MsgUpdateExchangeRate,
 };
 
 type msgCreateExchangeRateParams = {
   value: MsgCreateExchangeRate,
-};
-
-type msgExchangeTokenParams = {
-  value: MsgExchangeToken,
 };
 
 type msgDeleteExchangeRateParams = {
@@ -73,6 +73,20 @@ interface TxClientOptions {
 export const txClient = ({ signer, prefix, addr }: TxClientOptions = { addr: "http://localhost:26657", prefix: "cosmos" }) => {
 
   return {
+		
+		async sendMsgExchangeToken({ value, fee, memo }: sendMsgExchangeTokenParams): Promise<DeliverTxResponse> {
+			if (!signer) {
+					throw new Error('TxClient:sendMsgExchangeToken: Unable to sign Tx. Signer is not present.')
+			}
+			try {			
+				const { address } = (await signer.getAccounts())[0]; 
+				const signingClient = await SigningStargateClient.connectWithSigner(addr,signer,{registry, prefix});
+				let msg = this.msgExchangeToken({ value: MsgExchangeToken.fromPartial(value) })
+				return await signingClient.signAndBroadcast(address, [msg], fee ? fee : defaultFee, memo)
+			} catch (e: any) {
+				throw new Error('TxClient:sendMsgExchangeToken: Could not broadcast Tx: '+ e.message)
+			}
+		},
 		
 		async sendMsgUpdateExchangeRate({ value, fee, memo }: sendMsgUpdateExchangeRateParams): Promise<DeliverTxResponse> {
 			if (!signer) {
@@ -102,20 +116,6 @@ export const txClient = ({ signer, prefix, addr }: TxClientOptions = { addr: "ht
 			}
 		},
 		
-		async sendMsgExchangeToken({ value, fee, memo }: sendMsgExchangeTokenParams): Promise<DeliverTxResponse> {
-			if (!signer) {
-					throw new Error('TxClient:sendMsgExchangeToken: Unable to sign Tx. Signer is not present.')
-			}
-			try {			
-				const { address } = (await signer.getAccounts())[0]; 
-				const signingClient = await SigningStargateClient.connectWithSigner(addr,signer,{registry, prefix});
-				let msg = this.msgExchangeToken({ value: MsgExchangeToken.fromPartial(value) })
-				return await signingClient.signAndBroadcast(address, [msg], fee ? fee : defaultFee, memo)
-			} catch (e: any) {
-				throw new Error('TxClient:sendMsgExchangeToken: Could not broadcast Tx: '+ e.message)
-			}
-		},
-		
 		async sendMsgDeleteExchangeRate({ value, fee, memo }: sendMsgDeleteExchangeRateParams): Promise<DeliverTxResponse> {
 			if (!signer) {
 					throw new Error('TxClient:sendMsgDeleteExchangeRate: Unable to sign Tx. Signer is not present.')
@@ -131,6 +131,14 @@ export const txClient = ({ signer, prefix, addr }: TxClientOptions = { addr: "ht
 		},
 		
 		
+		msgExchangeToken({ value }: msgExchangeTokenParams): EncodeObject {
+			try {
+				return { typeUrl: "/buchain.exchange.MsgExchangeToken", value: MsgExchangeToken.fromPartial( value ) }  
+			} catch (e: any) {
+				throw new Error('TxClient:MsgExchangeToken: Could not create message: ' + e.message)
+			}
+		},
+		
 		msgUpdateExchangeRate({ value }: msgUpdateExchangeRateParams): EncodeObject {
 			try {
 				return { typeUrl: "/buchain.exchange.MsgUpdateExchangeRate", value: MsgUpdateExchangeRate.fromPartial( value ) }  
@@ -144,14 +152,6 @@ export const txClient = ({ signer, prefix, addr }: TxClientOptions = { addr: "ht
 				return { typeUrl: "/buchain.exchange.MsgCreateExchangeRate", value: MsgCreateExchangeRate.fromPartial( value ) }  
 			} catch (e: any) {
 				throw new Error('TxClient:MsgCreateExchangeRate: Could not create message: ' + e.message)
-			}
-		},
-		
-		msgExchangeToken({ value }: msgExchangeTokenParams): EncodeObject {
-			try {
-				return { typeUrl: "/buchain.exchange.MsgExchangeToken", value: MsgExchangeToken.fromPartial( value ) }  
-			} catch (e: any) {
-				throw new Error('TxClient:MsgExchangeToken: Could not create message: ' + e.message)
 			}
 		},
 		

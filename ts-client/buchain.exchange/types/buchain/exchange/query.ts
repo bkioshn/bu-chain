@@ -2,8 +2,7 @@
 import Long from "long";
 import _m0 from "protobufjs/minimal";
 import { PageRequest, PageResponse } from "../../cosmos/base/query/v1beta1/pagination";
-import { ExchangeRate } from "./exchange_rate";
-import { Params } from "./params";
+import { ExchangeRate, Params } from "./exchange";
 
 export const protobufPackage = "buchain.exchange";
 
@@ -43,6 +42,15 @@ export interface QueryExchangeAmountRequest {
 
 export interface QueryExchangeAmountResponse {
   amount: number;
+}
+
+export interface QueryExchangePairsRequest {
+  pagination: PageRequest | undefined;
+}
+
+export interface QueryExchangePairsResponse {
+  exchangePair: string[];
+  pagination: PageResponse | undefined;
 }
 
 function createBaseQueryParamsRequest(): QueryParamsRequest {
@@ -461,6 +469,121 @@ export const QueryExchangeAmountResponse = {
   },
 };
 
+function createBaseQueryExchangePairsRequest(): QueryExchangePairsRequest {
+  return { pagination: undefined };
+}
+
+export const QueryExchangePairsRequest = {
+  encode(message: QueryExchangePairsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.pagination !== undefined) {
+      PageRequest.encode(message.pagination, writer.uint32(10).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): QueryExchangePairsRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseQueryExchangePairsRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.pagination = PageRequest.decode(reader, reader.uint32());
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): QueryExchangePairsRequest {
+    return { pagination: isSet(object.pagination) ? PageRequest.fromJSON(object.pagination) : undefined };
+  },
+
+  toJSON(message: QueryExchangePairsRequest): unknown {
+    const obj: any = {};
+    message.pagination !== undefined
+      && (obj.pagination = message.pagination ? PageRequest.toJSON(message.pagination) : undefined);
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<QueryExchangePairsRequest>, I>>(object: I): QueryExchangePairsRequest {
+    const message = createBaseQueryExchangePairsRequest();
+    message.pagination = (object.pagination !== undefined && object.pagination !== null)
+      ? PageRequest.fromPartial(object.pagination)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseQueryExchangePairsResponse(): QueryExchangePairsResponse {
+  return { exchangePair: [], pagination: undefined };
+}
+
+export const QueryExchangePairsResponse = {
+  encode(message: QueryExchangePairsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.exchangePair) {
+      writer.uint32(10).string(v!);
+    }
+    if (message.pagination !== undefined) {
+      PageResponse.encode(message.pagination, writer.uint32(18).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): QueryExchangePairsResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseQueryExchangePairsResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.exchangePair.push(reader.string());
+          break;
+        case 2:
+          message.pagination = PageResponse.decode(reader, reader.uint32());
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): QueryExchangePairsResponse {
+    return {
+      exchangePair: Array.isArray(object?.exchangePair) ? object.exchangePair.map((e: any) => String(e)) : [],
+      pagination: isSet(object.pagination) ? PageResponse.fromJSON(object.pagination) : undefined,
+    };
+  },
+
+  toJSON(message: QueryExchangePairsResponse): unknown {
+    const obj: any = {};
+    if (message.exchangePair) {
+      obj.exchangePair = message.exchangePair.map((e) => e);
+    } else {
+      obj.exchangePair = [];
+    }
+    message.pagination !== undefined
+      && (obj.pagination = message.pagination ? PageResponse.toJSON(message.pagination) : undefined);
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<QueryExchangePairsResponse>, I>>(object: I): QueryExchangePairsResponse {
+    const message = createBaseQueryExchangePairsResponse();
+    message.exchangePair = object.exchangePair?.map((e) => e) || [];
+    message.pagination = (object.pagination !== undefined && object.pagination !== null)
+      ? PageResponse.fromPartial(object.pagination)
+      : undefined;
+    return message;
+  },
+};
+
 /** Query defines the gRPC querier service. */
 export interface Query {
   /** Parameters queries the parameters of the module. */
@@ -469,8 +592,10 @@ export interface Query {
   ExchangeRate(request: QueryGetExchangeRateRequest): Promise<QueryGetExchangeRateResponse>;
   /** Queries a list of ExchangeRate items. */
   ExchangeRateAll(request: QueryAllExchangeRateRequest): Promise<QueryAllExchangeRateResponse>;
-  /** Queries a list of ExchangeAmount items. */
+  /** Queries exchange-amount */
   ExchangeAmount(request: QueryExchangeAmountRequest): Promise<QueryExchangeAmountResponse>;
+  /** Queries list of exchange pair */
+  ExchangePairs(request: QueryExchangePairsRequest): Promise<QueryExchangePairsResponse>;
 }
 
 export class QueryClientImpl implements Query {
@@ -481,6 +606,7 @@ export class QueryClientImpl implements Query {
     this.ExchangeRate = this.ExchangeRate.bind(this);
     this.ExchangeRateAll = this.ExchangeRateAll.bind(this);
     this.ExchangeAmount = this.ExchangeAmount.bind(this);
+    this.ExchangePairs = this.ExchangePairs.bind(this);
   }
   Params(request: QueryParamsRequest): Promise<QueryParamsResponse> {
     const data = QueryParamsRequest.encode(request).finish();
@@ -504,6 +630,12 @@ export class QueryClientImpl implements Query {
     const data = QueryExchangeAmountRequest.encode(request).finish();
     const promise = this.rpc.request("buchain.exchange.Query", "ExchangeAmount", data);
     return promise.then((data) => QueryExchangeAmountResponse.decode(new _m0.Reader(data)));
+  }
+
+  ExchangePairs(request: QueryExchangePairsRequest): Promise<QueryExchangePairsResponse> {
+    const data = QueryExchangePairsRequest.encode(request).finish();
+    const promise = this.rpc.request("buchain.exchange.Query", "ExchangePairs", data);
+    return promise.then((data) => QueryExchangePairsResponse.decode(new _m0.Reader(data)));
   }
 }
 

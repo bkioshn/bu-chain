@@ -2,8 +2,7 @@ syntax = "proto3";
 package buchain.exchange;
 
 import "gogoproto/gogo.proto";
-import "buchain/exchange/params.proto";
-import "buchain/exchange/exchange_rate.proto";
+import "buchain/exchange/exchange.proto";
 // this line is used by starport scaffolding # genesis/proto/import
 
 option go_package = "bu-chain/x/exchange/types";

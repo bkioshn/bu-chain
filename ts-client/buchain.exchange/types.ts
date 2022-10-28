@@ -1,9 +1,9 @@
-import { ExchangeRate } from "./types/buchain/exchange/exchange_rate"
-import { Params } from "./types/buchain/exchange/params"
+import { Params } from "./types/buchain/exchange/exchange"
+import { ExchangeRate } from "./types/buchain/exchange/exchange"
 
 
 export {     
-    ExchangeRate,
     Params,
+    ExchangeRate,
     
  }

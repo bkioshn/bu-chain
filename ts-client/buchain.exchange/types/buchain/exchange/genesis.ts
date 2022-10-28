@@ -1,7 +1,6 @@
 /* eslint-disable */
 import _m0 from "protobufjs/minimal";
-import { ExchangeRate } from "./exchange_rate";
-import { Params } from "./params";
+import { ExchangeRate, Params } from "./exchange";
 
 export const protobufPackage = "buchain.exchange";
 

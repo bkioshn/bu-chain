@@ -10,3 +10,10 @@ message Params {
   option (gogoproto.goproto_stringer) = false;
   
 }
+
+message ExchangeRate {
+  string index = 1; 
+  string rate = 2; 
+  string creator = 3;
+}
+

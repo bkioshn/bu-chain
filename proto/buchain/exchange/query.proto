@@ -3,8 +3,7 @@ package buchain.exchange;
 
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
-import "buchain/exchange/params.proto";
-import "buchain/exchange/exchange_rate.proto";
+import "buchain/exchange/exchange.proto";
 // this line is used by starport scaffolding # 1
 import "cosmos/base/v1beta1/coin.proto";
 import "gogoproto/gogo.proto";
@@ -13,11 +12,11 @@ option go_package = "bu-chain/x/exchange/types";
 
 // Query defines the gRPC querier service.
 service Query {
-  // Parameters queries the parameters of the module.
-  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/bu-chain/exchange/params";
-  }
-  // Queries a ExchangeRate by index.
+	// Parameters queries the parameters of the module.
+	rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+		option (google.api.http).get = "/bu-chain/exchange/params";
+	}
+  	// Queries a ExchangeRate by index.
 	rpc ExchangeRate(QueryGetExchangeRateRequest) returns (QueryGetExchangeRateResponse) {
 		option (google.api.http).get = "/bu-chain/exchange/exchange_rate/{index}";
 	}
@@ -27,9 +26,14 @@ service Query {
 		option (google.api.http).get = "/bu-chain/exchange/exchange_rate";
 	}
 
-// Queries a list of ExchangeAmount items.
+	// Queries exchange-amount
 	rpc ExchangeAmount(QueryExchangeAmountRequest) returns (QueryExchangeAmountResponse) {
 		option (google.api.http).get = "/bu-chain/exchange/exchange_amount/{denom}/{amount}/{exchangeToken}";
+	}
+
+	// Queries list of exchange pair
+	rpc ExchangePairs(QueryExchangePairsRequest) returns (QueryExchangePairsResponse) {
+		option (google.api.http).get = "/bu-chain/exchange/exchange_pair";
 	}
 
 // this line is used by starport scaffolding # 2
@@ -73,4 +77,12 @@ message QueryExchangeAmountResponse {
 	uint64 amount = 1;
 }
 
+message QueryExchangePairsRequest {
+	cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryExchangePairsResponse {
+	repeated string exchangePair = 1 [(gogoproto.nullable) = false];
+	cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
 // this line is used by starport scaffolding # 3

@@ -48,6 +48,21 @@ export interface ExchangeQueryExchangeAmountResponse {
   amount?: string;
 }
 
+export interface ExchangeQueryExchangePairsResponse {
+  exchangePair?: string[];
+
+  /**
+   * PageResponse is to be embedded in gRPC response messages where the
+   * corresponding request message has used PageRequest.
+   *
+   *  message SomeResponse {
+   *          repeated Bar results = 1;
+   *          PageResponse page = 2;
+   *  }
+   */
+  pagination?: V1Beta1PageResponse;
+}
+
 export interface ExchangeQueryGetExchangeRateResponse {
   exchangeRate?: ExchangeExchangeRate;
 }
@@ -275,7 +290,7 @@ export class HttpClient<SecurityDataType = unknown> {
 }
 
 /**
- * @title buchain/exchange/exchange_rate.proto
+ * @title buchain/exchange/exchange.proto
  * @version version not set
  */
 export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
@@ -284,13 +299,39 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
    *
    * @tags Query
    * @name QueryExchangeAmount
-   * @summary Queries a list of ExchangeAmount items.
+   * @summary Queries exchange-amount
    * @request GET:/bu-chain/exchange/exchange_amount/{denom}/{amount}/{exchangeToken}
    */
   queryExchangeAmount = (denom: string, amount: string, exchangeToken: string, params: RequestParams = {}) =>
     this.request<ExchangeQueryExchangeAmountResponse, RpcStatus>({
       path: `/bu-chain/exchange/exchange_amount/${denom}/${amount}/${exchangeToken}`,
       method: "GET",
+      format: "json",
+      ...params,
+    });
+
+  /**
+   * No description
+   *
+   * @tags Query
+   * @name QueryExchangePairs
+   * @summary Queries list of exchange pair
+   * @request GET:/bu-chain/exchange/exchange_pair
+   */
+  queryExchangePairs = (
+    query?: {
+      "pagination.key"?: string;
+      "pagination.offset"?: string;
+      "pagination.limit"?: string;
+      "pagination.count_total"?: boolean;
+      "pagination.reverse"?: boolean;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<ExchangeQueryExchangePairsResponse, RpcStatus>({
+      path: `/bu-chain/exchange/exchange_pair`,
+      method: "GET",
+      query: query,
       format: "json",
       ...params,
     });
