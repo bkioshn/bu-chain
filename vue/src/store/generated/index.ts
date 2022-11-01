@@ -1,10 +1,8 @@
 // THIS FILE IS GENERATED AUTOMATICALLY. DO NOT MODIFY.
 
-import BuchainExchange from './buchain.exchange'
 
 
 export default { 
-  BuchainExchange: load(BuchainExchange, 'buchain.exchange'),
   
 }
 
