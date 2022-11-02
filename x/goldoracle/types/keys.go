@@ -14,7 +14,7 @@ const (
 	MemStoreKey = "mem_goldoracle"
 
 	// Version defines the current version the IBC module supports
-	Version = "goldoracle-1"
+	Version = "bandchain-1"
 
 	// PortID is the default port id that module binds to
 	PortID = "goldoracle"

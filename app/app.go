@@ -333,7 +333,12 @@ func New(
 	scopedICAControllerKeeper := app.CapabilityKeeper.ScopeToModule(icacontrollertypes.SubModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 	scopedICAHostKeeper := app.CapabilityKeeper.ScopeToModule(icahosttypes.SubModuleName)
+	scopedGoldoracleKeeper := app.CapabilityKeeper.ScopeToModule(goldoraclemoduletypes.ModuleName)
+
 	// this line is used by starport scaffolding # stargate/app/scopedKeeper
+
+	// Sealing prevents other modules from creating scoped sub-keepers
+	app.CapabilityKeeper.Seal()
 
 	// add keepers
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
@@ -522,8 +527,6 @@ func New(
 	)
 	exchangeModule := exchangemodule.NewAppModule(appCodec, app.ExchangeKeeper, app.AccountKeeper, app.BankKeeper)
 
-	scopedGoldoracleKeeper := app.CapabilityKeeper.ScopeToModule(goldoraclemoduletypes.ModuleName)
-	app.ScopedGoldoracleKeeper = scopedGoldoracleKeeper
 	app.GoldoracleKeeper = *goldoraclemodulekeeper.NewKeeper(
 		appCodec,
 		keys[goldoraclemoduletypes.StoreKey],
@@ -537,9 +540,6 @@ func New(
 
 	goldoracleIBCModule := goldoraclemodule.NewIBCModule(app.GoldoracleKeeper)
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
-
-	// Sealing prevents other modules from creating scoped sub-keepers
-	app.CapabilityKeeper.Seal()
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := ibcporttypes.NewRouter()
@@ -742,6 +742,7 @@ func New(
 
 	app.ScopedIBCKeeper = scopedIBCKeeper
 	app.ScopedTransferKeeper = scopedTransferKeeper
+	app.ScopedGoldoracleKeeper = scopedGoldoracleKeeper
 	// this line is used by starport scaffolding # stargate/app/beforeInitReturn
 
 	return app
