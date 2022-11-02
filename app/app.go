@@ -108,6 +108,10 @@ import (
 	exchangemodulekeeper "bu-chain/x/exchange/keeper"
 	exchangemoduletypes "bu-chain/x/exchange/types"
 
+	goldoraclemodule "bu-chain/x/goldoracle"
+	goldoraclemodulekeeper "bu-chain/x/goldoracle/keeper"
+	goldoraclemoduletypes "bu-chain/x/goldoracle/types"
+
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	appparams "bu-chain/app/params"
@@ -167,6 +171,7 @@ var (
 		ica.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 		exchangemodule.AppModuleBasic{},
+		goldoraclemodule.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
 
@@ -241,7 +246,9 @@ type App struct {
 	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
 	ScopedICAHostKeeper  capabilitykeeper.ScopedKeeper
 
-	ExchangeKeeper exchangemodulekeeper.Keeper
+	ExchangeKeeper         exchangemodulekeeper.Keeper
+	ScopedGoldoracleKeeper capabilitykeeper.ScopedKeeper
+	GoldoracleKeeper       goldoraclemodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// mm is the module manager
@@ -287,6 +294,7 @@ func New(
 		ibctransfertypes.StoreKey, icahosttypes.StoreKey, capabilitytypes.StoreKey, group.StoreKey,
 		icacontrollertypes.StoreKey,
 		exchangemoduletypes.StoreKey,
+		goldoraclemoduletypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -514,6 +522,20 @@ func New(
 	)
 	exchangeModule := exchangemodule.NewAppModule(appCodec, app.ExchangeKeeper, app.AccountKeeper, app.BankKeeper)
 
+	scopedGoldoracleKeeper := app.CapabilityKeeper.ScopeToModule(goldoraclemoduletypes.ModuleName)
+	app.ScopedGoldoracleKeeper = scopedGoldoracleKeeper
+	app.GoldoracleKeeper = *goldoraclemodulekeeper.NewKeeper(
+		appCodec,
+		keys[goldoraclemoduletypes.StoreKey],
+		keys[goldoraclemoduletypes.MemStoreKey],
+		app.GetSubspace(goldoraclemoduletypes.ModuleName),
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper,
+		scopedGoldoracleKeeper,
+	)
+	goldoracleModule := goldoraclemodule.NewAppModule(appCodec, app.GoldoracleKeeper, app.AccountKeeper, app.BankKeeper)
+
+	goldoracleIBCModule := goldoraclemodule.NewIBCModule(app.GoldoracleKeeper)
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 
 	// Sealing prevents other modules from creating scoped sub-keepers
@@ -523,6 +545,7 @@ func New(
 	ibcRouter := ibcporttypes.NewRouter()
 	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
 		AddRoute(ibctransfertypes.ModuleName, transferIBCModule)
+	ibcRouter.AddRoute(goldoraclemoduletypes.ModuleName, goldoracleIBCModule)
 	// this line is used by starport scaffolding # ibc/app/router
 	app.IBCKeeper.SetRouter(ibcRouter)
 
@@ -560,6 +583,7 @@ func New(
 		transferModule,
 		icaModule,
 		exchangeModule,
+		goldoracleModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 
@@ -590,6 +614,7 @@ func New(
 		paramstypes.ModuleName,
 		vestingtypes.ModuleName,
 		exchangemoduletypes.ModuleName,
+		goldoraclemoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/beginBlockers
 	)
 
@@ -615,6 +640,7 @@ func New(
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
 		exchangemoduletypes.ModuleName,
+		goldoraclemoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/endBlockers
 	)
 
@@ -645,6 +671,7 @@ func New(
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
 		exchangemoduletypes.ModuleName,
+		goldoraclemoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)
 
@@ -675,6 +702,7 @@ func New(
 		ibc.NewAppModule(app.IBCKeeper),
 		transferModule,
 		exchangeModule,
+		goldoracleModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 	app.sm.RegisterStoreDecoders()
@@ -874,6 +902,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
 	paramsKeeper.Subspace(exchangemoduletypes.ModuleName)
+	paramsKeeper.Subspace(goldoraclemoduletypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
 	return paramsKeeper
