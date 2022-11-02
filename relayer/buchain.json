@@ -1,0 +1,16 @@
+{
+	"type": "cosmos",
+	"value": {
+		"key": "bu-key",
+		"chain-id": "buchain",
+		"rpc-addr": "http://localhost:26657",
+		"account-prefix": "cosmos",
+		"keyring-backend": "test",
+		"gas-adjustment": 1.2,
+		"gas-prices": "0.01ububu",
+		"debug": true,
+		"timeout": "20s",
+		"output-format": "json",
+		"sign-mode": "direct"
+	}
+}

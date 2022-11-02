@@ -11,11 +11,14 @@ echo "lock nasty suffer dirt dream fine fall deal curtain plate husband sound to
     | bu-chaind keys add alice --recover --keyring-backend test
 echo "smile stem oven genius cave resource better lunar nasty moon company ridge brass rather supply used horn three panic put venue analyst leader comic" \
     | bu-chaind keys add bob --recover --keyring-backend test
+echo "genre window palace raccoon youth else wear receive orange heart urge usage image dove viable wrap muffin across trick weird lady cinnamon fiscal boss" \
+    | bu-chaind keys add bu-key --recover --keyring-backend test
 
 
 # add accounts to genesis
 bu-chaind add-genesis-account alice 10000000000000${DENOM},100000000ngum --keyring-backend test
 bu-chaind add-genesis-account bob 10000000000000${DENOM} --keyring-backend test
+bu-chaind add-genesis-account bu-key 10000000000000${DENOM} --keyring-backend test
 
 # register initial validators
 bu-chaind gentx alice 100000000${DENOM} \
