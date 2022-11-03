@@ -5,6 +5,7 @@ import (
 
 	"bu-chain/x/goldoracle/keeper"
 	"bu-chain/x/goldoracle/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
@@ -149,7 +150,26 @@ func (im IBCModule) OnRecvPacket(
 
 	// Dispatch packet
 	switch packet := modulePacketData.Packet.(type) {
-	// this line is used by starport scaffolding # ibc/packet/module/recv
+	// Receive OracleRequestPacketData
+	case *types.GoldoraclePacketData_OracleRequestPacketData:
+		packetAck, err := im.keeper.OnRecvOraclePacket(ctx, modulePacket, *packet.OracleRequestPacketData)
+		if err != nil {
+			ack = channeltypes.NewErrorAcknowledgement(err)
+		} else {
+			packetAckBytes, err := types.ModuleCdc.MarshalJSON(&packetAck)
+			if err != nil {
+				return channeltypes.NewErrorAcknowledgement(sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error()))
+			}
+			ack = channeltypes.NewResultAcknowledgement(sdk.MustSortJSON(packetAckBytes))
+		}
+		ctx.EventManager().EmitEvent(
+			sdk.NewEvent(
+				types.EventTypeSendReqGoldPrice,
+				sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
+				sdk.NewAttribute(types.AttributeKeyAckSuccess, fmt.Sprintf("%t", err != nil)),
+			),
+		)
+
 	default:
 		err := fmt.Errorf("unrecognized %s packet type: %T", types.ModuleName, packet)
 		return channeltypes.NewErrorAcknowledgement(err)
@@ -182,6 +202,11 @@ func (im IBCModule) OnAcknowledgementPacket(
 
 	// Dispatch packet
 	switch packet := modulePacketData.Packet.(type) {
+	case *types.GoldoraclePacketData_OracleRequestPacketData:
+		err := im.keeper.OnAcknowledgemenOraclePacket(ctx, modulePacket, *packet.OracleRequestPacketData, ack)
+		if err != nil {
+			return err
+		}
 	// this line is used by starport scaffolding # ibc/packet/module/ack
 	default:
 		errMsg := fmt.Sprintf("unrecognized %s packet type: %T", types.ModuleName, packet)
@@ -229,7 +254,11 @@ func (im IBCModule) OnTimeoutPacket(
 
 	// Dispatch packet
 	switch packet := modulePacketData.Packet.(type) {
-	// this line is used by starport scaffolding # ibc/packet/module/timeout
+	case *types.GoldoraclePacketData_OracleRequestPacketData:
+		err := im.keeper.OnTimeoutOraclePacket(ctx, modulePacket, *packet.OracleRequestPacketData)
+		if err != nil {
+			return nil
+		}
 	default:
 		errMsg := fmt.Sprintf("unrecognized %s packet type: %T", types.ModuleName, packet)
 		return sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)

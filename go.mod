@@ -21,6 +21,8 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
+require github.com/grpc-ecosystem/grpc-gateway/v2 v2.13.0 // indirect
+
 require (
 	cloud.google.com/go v0.105.0 // indirect
 	cloud.google.com/go/compute v1.10.0 // indirect
@@ -40,6 +42,7 @@ require (
 	github.com/armon/go-metrics v0.4.0 // indirect
 	github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5 // indirect
 	github.com/aws/aws-sdk-go v1.40.45 // indirect
+	github.com/bandprotocol/bandchain-packet v0.0.3
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect

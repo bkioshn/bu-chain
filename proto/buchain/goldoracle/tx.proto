@@ -7,7 +7,14 @@ option go_package = "bu-chain/x/goldoracle/types";
 
 // Msg defines the Msg service.
 service Msg {
-    // this line is used by starport scaffolding # proto/tx/rpc
+    rpc SendReqGoldPrice (MsgSendReqGoldPriceRequest) returns (MsgSendReqGoldPriceResponse);
 }
 
-// this line is used by starport scaffolding # proto/tx/message
+message MsgSendReqGoldPriceRequest {
+    string creator = 1;
+    string port = 2;
+    string channelID = 3;
+    uint64 timeout = 4;
+}
+
+message MsgSendReqGoldPriceResponse {}
