@@ -2,8 +2,7 @@ syntax = "proto3";
 package buchain.goldoracle;
 
 import "gogoproto/gogo.proto";
-import "buchain/goldoracle/params.proto";
-// this line is used by starport scaffolding # genesis/proto/import
+import "buchain/goldoracle/goldOracle.proto";
 
 option go_package = "bu-chain/x/goldoracle/types";
 
@@ -11,5 +10,4 @@ option go_package = "bu-chain/x/goldoracle/types";
 message GenesisState {
   Params params = 1 [(gogoproto.nullable) = false];
   string port_id = 2;
-  // this line is used by starport scaffolding # genesis/proto/state
 }

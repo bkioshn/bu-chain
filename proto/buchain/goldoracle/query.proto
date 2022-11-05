@@ -3,8 +3,8 @@ package buchain.goldoracle;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
-import "buchain/goldoracle/params.proto";
+// import "cosmos/base/query/v1beta1/pagination.proto";
+import "buchain/goldoracle/goldOracle.proto";
 // this line is used by starport scaffolding # 1
 
 option go_package = "bu-chain/x/goldoracle/types";
