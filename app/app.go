@@ -535,8 +535,9 @@ func New(
 		app.IBCKeeper.ChannelKeeper,
 		&app.IBCKeeper.PortKeeper,
 		scopedGoldoracleKeeper,
+		app.ExchangeKeeper,
 	)
-	goldoracleModule := goldoraclemodule.NewAppModule(appCodec, app.GoldoracleKeeper, app.AccountKeeper, app.BankKeeper)
+	goldoracleModule := goldoraclemodule.NewAppModule(appCodec, app.GoldoracleKeeper, app.AccountKeeper, app.BankKeeper, app.ExchangeKeeper)
 
 	goldoracleIBCModule := goldoraclemodule.NewIBCModule(app.GoldoracleKeeper)
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition

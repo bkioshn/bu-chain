@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	// this line is used by starport scaffolding # 1
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -14,6 +15,7 @@ import (
 	"bu-chain/x/goldoracle/client/cli"
 	"bu-chain/x/goldoracle/keeper"
 	"bu-chain/x/goldoracle/types"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -93,9 +95,10 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 type AppModule struct {
 	AppModuleBasic
 
-	keeper        keeper.Keeper
-	accountKeeper types.AccountKeeper
-	bankKeeper    types.BankKeeper
+	keeper         keeper.Keeper
+	accountKeeper  types.AccountKeeper
+	bankKeeper     types.BankKeeper
+	exchangeKeeper types.ExchangeKeeper
 }
 
 func NewAppModule(
@@ -103,12 +106,14 @@ func NewAppModule(
 	keeper keeper.Keeper,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
+	exchangeKeeper types.ExchangeKeeper,
 ) AppModule {
 	return AppModule{
 		AppModuleBasic: NewAppModuleBasic(cdc),
 		keeper:         keeper,
 		accountKeeper:  accountKeeper,
 		bankKeeper:     bankKeeper,
+		exchangeKeeper: exchangeKeeper,
 	}
 }
 
@@ -156,6 +161,7 @@ func (AppModule) ConsensusVersion() uint64 { return 1 }
 func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
 
 // EndBlock contains the logic that is automatically triggered at the end of each block
-func (am AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+	handleEndBlock(ctx, am.keeper)
 	return []abci.ValidatorUpdate{}
 }
