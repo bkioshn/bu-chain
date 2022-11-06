@@ -25,7 +25,7 @@ func CmdSendReqGoldPrice() *cobra.Command {
 
 			// Hardcode
 			srcPort := "goldoracle"
-			srcChannel := "channel-0"
+			srcChannel := "channel-1"
 
 			if err != nil {
 				return err
