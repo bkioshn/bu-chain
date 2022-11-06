@@ -16,13 +16,15 @@ var _ sdk.Msg = &MsgCreateExchangeRate{}
 func NewMsgCreateExchangeRate(
 	creator string,
 	index string,
-	rate string,
+	rate uint64,
+	multiplier uint64,
 
 ) *MsgCreateExchangeRate {
 	return &MsgCreateExchangeRate{
-		Creator: creator,
-		Index:   index,
-		Rate:    rate,
+		Creator:    creator,
+		Index:      index,
+		Rate:       rate,
+		Multiplier: multiplier,
 	}
 }
 
@@ -60,13 +62,15 @@ var _ sdk.Msg = &MsgUpdateExchangeRate{}
 func NewMsgUpdateExchangeRate(
 	creator string,
 	index string,
-	rate string,
+	rate uint64,
+	multiplier uint64,
 
 ) *MsgUpdateExchangeRate {
 	return &MsgUpdateExchangeRate{
-		Creator: creator,
-		Index:   index,
-		Rate:    rate,
+		Creator:    creator,
+		Index:      index,
+		Rate:       rate,
+		Multiplier: multiplier,
 	}
 }
 

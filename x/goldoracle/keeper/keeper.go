@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"bu-chain/x/goldoracle/types"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -19,6 +20,8 @@ type (
 		storeKey   storetypes.StoreKey
 		memKey     storetypes.StoreKey
 		paramstore paramtypes.Subspace
+
+		exchangeKeeper types.ExchangeKeeper
 	}
 )
 
@@ -31,6 +34,7 @@ func NewKeeper(
 	portKeeper cosmosibckeeper.PortKeeper,
 	scopedKeeper cosmosibckeeper.ScopedKeeper,
 
+	exchangeKeeper types.ExchangeKeeper,
 ) *Keeper {
 	// set KeyTable if it has not already been set
 	if !ps.HasKeyTable() {
@@ -45,10 +49,11 @@ func NewKeeper(
 			portKeeper,
 			scopedKeeper,
 		),
-		cdc:        cdc,
-		storeKey:   storeKey,
-		memKey:     memKey,
-		paramstore: ps,
+		cdc:            cdc,
+		storeKey:       storeKey,
+		memKey:         memKey,
+		paramstore:     ps,
+		exchangeKeeper: exchangeKeeper,
 	}
 }
 

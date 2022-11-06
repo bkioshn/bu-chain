@@ -1,10 +1,10 @@
 package keeper
 
 import (
+	appparams "bu-chain/app/params"
 	"context"
-	"math"
+	"fmt"
 	"strconv"
-	"strings"
 
 	"bu-chain/x/exchange/types"
 
@@ -68,32 +68,29 @@ func (k Keeper) ExchangeAmount(c context.Context, req *types.QueryExchangeAmount
 	ctx := sdk.UnwrapSDKContext(c)
 
 	// TODO: Process the query
-	exchangePair := req.Denom + "-" + req.ExchangeToken
-	rate, isFound := k.GetExchangeRate(ctx, exchangePair)
-	exRate, err := strconv.ParseFloat(rate.Rate, 64)
 
-	if strings.Compare(req.Denom, req.ExchangeToken) == 1 {
-		exchangePair = req.ExchangeToken + "-" + req.Denom
-		rate, isFound = k.GetExchangeRate(ctx, exchangePair)
-		if !isFound {
-			return nil, types.ErrTokenPairNotFound
-		}
-		exRate, err = strconv.ParseFloat(rate.Rate, 64)
-		if err != nil {
-			return nil, err
-		}
-		exRate = 1 / exRate
-	}
-	if !isFound {
-		return nil, types.ErrTokenPairNotFound
-	}
+	exchangePair := req.Denom + "-" + req.ExchangeToken
+
+	tokenReceivedAmount, err := strconv.ParseFloat(req.Amount, 64) // ParseUint(req.Amount, 10, 64)
 	if err != nil {
 		return nil, err
 	}
-	exRate64 := uint64(exRate * math.Pow10(3))
-	tokenReceivedAmount, err := strconv.ParseUint(req.Amount, 10, 64)
-	tokenReceivedAmount = tokenReceivedAmount * exRate64 / uint64(math.Pow10(3))
-	return &types.QueryExchangeAmountResponse{Amount: tokenReceivedAmount}, nil
+	if req.Denom == appparams.DisplayDenom {
+		exchangePair = req.ExchangeToken + "-" + req.Denom
+		rate, isFound := k.GetExchangeRate(ctx, exchangePair)
+		if !isFound {
+			return nil, types.ErrTokenPairNotFound
+		}
+		tokenReceivedAmount = tokenReceivedAmount * float64(rate.Multiplier) / float64(rate.Rate)
+
+	} else {
+		rate, isFound := k.GetExchangeRate(ctx, exchangePair)
+		if !isFound {
+			return nil, types.ErrTokenPairNotFound
+		}
+		tokenReceivedAmount = tokenReceivedAmount * float64(rate.Rate) / float64(rate.Multiplier)
+	}
+	return &types.QueryExchangeAmountResponse{Amount: fmt.Sprint(tokenReceivedAmount)}, nil
 }
 
 func (k Keeper) ExchangePairs(c context.Context, req *types.QueryExchangePairsRequest) (*types.QueryExchangePairsResponse, error) {

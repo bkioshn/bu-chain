@@ -1,11 +1,10 @@
 package goldoracle
 
 import (
-	"fmt"
-
 	"bu-chain/x/goldoracle/keeper"
 	"bu-chain/x/goldoracle/types"
 
+	packet "github.com/bandprotocol/bandchain-packet/packet"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
@@ -139,42 +138,26 @@ func (im IBCModule) OnRecvPacket(
 	modulePacket channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) ibcexported.Acknowledgement {
+	var packetData packet.OracleResponsePacketData
 	var ack channeltypes.Acknowledgement
 
-	// this line is used by starport scaffolding # oracle/packet/module/recv
-
-	var modulePacketData types.GoldoraclePacketData
-	if err := modulePacketData.Unmarshal(modulePacket.GetData()); err != nil {
+	err := types.ModuleCdc.UnmarshalJSON(modulePacket.GetData(), &packetData)
+	if err != nil {
 		return channeltypes.NewErrorAcknowledgement(sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet data: %s", err.Error()))
 	}
 
-	// Dispatch packet
-	switch packet := modulePacketData.Packet.(type) {
-	// Receive OracleRequestPacketData
-	case *types.GoldoraclePacketData_OracleRequestPacketData:
-		packetAck, err := im.keeper.OnRecvOraclePacket(ctx, modulePacket, *packet.OracleRequestPacketData)
+	packetAck, err := im.keeper.OnRecvOraclePacket(ctx, modulePacket, packetData)
+
+	if err != nil {
+		ack = channeltypes.NewErrorAcknowledgement(err)
+	} else {
+		packetAckBytes, err := types.ModuleCdc.MarshalJSON(&packetAck)
+
 		if err != nil {
-			ack = channeltypes.NewErrorAcknowledgement(err)
-		} else {
-			packetAckBytes, err := types.ModuleCdc.MarshalJSON(&packetAck)
-			if err != nil {
-				return channeltypes.NewErrorAcknowledgement(sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error()))
-			}
-			ack = channeltypes.NewResultAcknowledgement(sdk.MustSortJSON(packetAckBytes))
+			return channeltypes.NewErrorAcknowledgement(sdkerrors.Wrap(sdkerrors.ErrJSONMarshal, err.Error()))
 		}
-		ctx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				types.EventTypeSendReqGoldPrice,
-				sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-				sdk.NewAttribute(types.AttributeKeyAckSuccess, fmt.Sprintf("%t", err != nil)),
-			),
-		)
-
-	default:
-		err := fmt.Errorf("unrecognized %s packet type: %T", types.ModuleName, packet)
-		return channeltypes.NewErrorAcknowledgement(err)
+		ack = channeltypes.NewResultAcknowledgement(sdk.MustSortJSON(packetAckBytes))
 	}
-
 	// NOTE: acknowledgement will be written synchronously during IBC handler execution.
 	return ack
 }
@@ -187,55 +170,15 @@ func (im IBCModule) OnAcknowledgementPacket(
 	relayer sdk.AccAddress,
 ) error {
 	var ack channeltypes.Acknowledgement
-	if err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack); err != nil {
+	err := types.ModuleCdc.UnmarshalJSON(acknowledgement, &ack)
+	if err != nil {
 		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet acknowledgement: %v", err)
 	}
 
-	// this line is used by starport scaffolding # oracle/packet/module/ack
-
-	var modulePacketData types.GoldoraclePacketData
-	if err := modulePacketData.Unmarshal(modulePacket.GetData()); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet data: %s", err.Error())
-	}
-
-	var eventType string
-
-	// Dispatch packet
-	switch packet := modulePacketData.Packet.(type) {
-	case *types.GoldoraclePacketData_OracleRequestPacketData:
-		err := im.keeper.OnAcknowledgemenOraclePacket(ctx, modulePacket, *packet.OracleRequestPacketData, ack)
-		if err != nil {
-			return err
-		}
-	// this line is used by starport scaffolding # ibc/packet/module/ack
-	default:
-		errMsg := fmt.Sprintf("unrecognized %s packet type: %T", types.ModuleName, packet)
-		return sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
-	}
-
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			eventType,
-			sdk.NewAttribute(sdk.AttributeKeyModule, types.ModuleName),
-			sdk.NewAttribute(types.AttributeKeyAck, fmt.Sprintf("%v", ack)),
-		),
-	)
-
-	switch resp := ack.Response.(type) {
-	case *channeltypes.Acknowledgement_Result:
-		ctx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				eventType,
-				sdk.NewAttribute(types.AttributeKeyAckSuccess, string(resp.Result)),
-			),
-		)
-	case *channeltypes.Acknowledgement_Error:
-		ctx.EventManager().EmitEvent(
-			sdk.NewEvent(
-				eventType,
-				sdk.NewAttribute(types.AttributeKeyAckError, resp.Error),
-			),
-		)
+	var packetData packet.OracleRequestPacketData
+	err = im.keeper.OnAcknowledgemenOraclePacket(ctx, modulePacket, packetData, ack)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -247,22 +190,5 @@ func (im IBCModule) OnTimeoutPacket(
 	modulePacket channeltypes.Packet,
 	relayer sdk.AccAddress,
 ) error {
-	var modulePacketData types.GoldoraclePacketData
-	if err := modulePacketData.Unmarshal(modulePacket.GetData()); err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrUnknownRequest, "cannot unmarshal packet data: %s", err.Error())
-	}
-
-	// Dispatch packet
-	switch packet := modulePacketData.Packet.(type) {
-	case *types.GoldoraclePacketData_OracleRequestPacketData:
-		err := im.keeper.OnTimeoutOraclePacket(ctx, modulePacket, *packet.OracleRequestPacketData)
-		if err != nil {
-			return nil
-		}
-	default:
-		errMsg := fmt.Sprintf("unrecognized %s packet type: %T", types.ModuleName, packet)
-		return sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, errMsg)
-	}
-
 	return nil
 }

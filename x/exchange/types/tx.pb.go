@@ -6,7 +6,7 @@ package types
 import (
 	context "context"
 	fmt "fmt"
-	types "github.com/cosmos/cosmos-sdk/types"
+	_ "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/gogo/protobuf/gogoproto"
 	grpc1 "github.com/gogo/protobuf/grpc"
 	proto "github.com/gogo/protobuf/proto"
@@ -30,10 +30,11 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type MsgExchangeToken struct {
-	Creator       string     `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
-	Receiver      string     `protobuf:"bytes,2,opt,name=receiver,proto3" json:"receiver,omitempty"`
-	Denom         types.Coin `protobuf:"bytes,3,opt,name=denom,proto3" json:"denom"`
-	ExchangeDenom string     `protobuf:"bytes,4,opt,name=exchangeDenom,proto3" json:"exchangeDenom,omitempty"`
+	Creator       string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	Receiver      string `protobuf:"bytes,2,opt,name=receiver,proto3" json:"receiver,omitempty"`
+	Denom         string `protobuf:"bytes,3,opt,name=denom,proto3" json:"denom,omitempty"`
+	Amount        string `protobuf:"bytes,4,opt,name=amount,proto3" json:"amount,omitempty"`
+	ExchangeToken string `protobuf:"bytes,5,opt,name=exchangeToken,proto3" json:"exchangeToken,omitempty"`
 }
 
 func (m *MsgExchangeToken) Reset()         { *m = MsgExchangeToken{} }
@@ -83,16 +84,23 @@ func (m *MsgExchangeToken) GetReceiver() string {
 	return ""
 }
 
-func (m *MsgExchangeToken) GetDenom() types.Coin {
+func (m *MsgExchangeToken) GetDenom() string {
 	if m != nil {
 		return m.Denom
 	}
-	return types.Coin{}
+	return ""
 }
 
-func (m *MsgExchangeToken) GetExchangeDenom() string {
+func (m *MsgExchangeToken) GetAmount() string {
 	if m != nil {
-		return m.ExchangeDenom
+		return m.Amount
+	}
+	return ""
+}
+
+func (m *MsgExchangeToken) GetExchangeToken() string {
+	if m != nil {
+		return m.ExchangeToken
 	}
 	return ""
 }
@@ -134,9 +142,10 @@ func (m *MsgExchangeTokenResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgExchangeTokenResponse proto.InternalMessageInfo
 
 type MsgCreateExchangeRate struct {
-	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
-	Index   string `protobuf:"bytes,2,opt,name=index,proto3" json:"index,omitempty"`
-	Rate    string `protobuf:"bytes,3,opt,name=rate,proto3" json:"rate,omitempty"`
+	Creator    string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	Index      string `protobuf:"bytes,2,opt,name=index,proto3" json:"index,omitempty"`
+	Rate       uint64 `protobuf:"varint,3,opt,name=rate,proto3" json:"rate,omitempty"`
+	Multiplier uint64 `protobuf:"varint,4,opt,name=multiplier,proto3" json:"multiplier,omitempty"`
 }
 
 func (m *MsgCreateExchangeRate) Reset()         { *m = MsgCreateExchangeRate{} }
@@ -186,11 +195,18 @@ func (m *MsgCreateExchangeRate) GetIndex() string {
 	return ""
 }
 
-func (m *MsgCreateExchangeRate) GetRate() string {
+func (m *MsgCreateExchangeRate) GetRate() uint64 {
 	if m != nil {
 		return m.Rate
 	}
-	return ""
+	return 0
+}
+
+func (m *MsgCreateExchangeRate) GetMultiplier() uint64 {
+	if m != nil {
+		return m.Multiplier
+	}
+	return 0
 }
 
 type MsgCreateExchangeRateResponse struct {
@@ -230,9 +246,10 @@ func (m *MsgCreateExchangeRateResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_MsgCreateExchangeRateResponse proto.InternalMessageInfo
 
 type MsgUpdateExchangeRate struct {
-	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
-	Index   string `protobuf:"bytes,2,opt,name=index,proto3" json:"index,omitempty"`
-	Rate    string `protobuf:"bytes,3,opt,name=rate,proto3" json:"rate,omitempty"`
+	Creator    string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	Index      string `protobuf:"bytes,2,opt,name=index,proto3" json:"index,omitempty"`
+	Rate       uint64 `protobuf:"varint,3,opt,name=rate,proto3" json:"rate,omitempty"`
+	Multiplier uint64 `protobuf:"varint,4,opt,name=multiplier,proto3" json:"multiplier,omitempty"`
 }
 
 func (m *MsgUpdateExchangeRate) Reset()         { *m = MsgUpdateExchangeRate{} }
@@ -282,11 +299,18 @@ func (m *MsgUpdateExchangeRate) GetIndex() string {
 	return ""
 }
 
-func (m *MsgUpdateExchangeRate) GetRate() string {
+func (m *MsgUpdateExchangeRate) GetRate() uint64 {
 	if m != nil {
 		return m.Rate
 	}
-	return ""
+	return 0
+}
+
+func (m *MsgUpdateExchangeRate) GetMultiplier() uint64 {
+	if m != nil {
+		return m.Multiplier
+	}
+	return 0
 }
 
 type MsgUpdateExchangeRateResponse struct {
@@ -428,33 +452,33 @@ func init() { proto.RegisterFile("buchain/exchange/tx.proto", fileDescriptor_041
 
 var fileDescriptor_041446b6385b0828 = []byte{
 	// 426 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x94, 0xdf, 0x8a, 0xda, 0x40,
-	0x14, 0xc6, 0x93, 0xaa, 0x6d, 0x9d, 0x22, 0xc8, 0x60, 0x21, 0x06, 0x1a, 0x25, 0x14, 0x2a, 0x85,
-	0x4e, 0x50, 0xe9, 0x0b, 0xa8, 0xa5, 0x57, 0xde, 0x84, 0xf6, 0xa6, 0xbd, 0x28, 0x49, 0x3c, 0xc4,
-	0xd0, 0x75, 0x26, 0x64, 0xa2, 0x64, 0xdf, 0x62, 0x5f, 0x62, 0x5f, 0x61, 0x9f, 0xc1, 0x4b, 0x2f,
-	0xf7, 0x6a, 0x59, 0xf4, 0x45, 0x96, 0x4c, 0x12, 0xd1, 0xfc, 0xd9, 0x5d, 0x58, 0xf6, 0xee, 0xcc,
-	0x9c, 0x6f, 0xce, 0xef, 0x1c, 0xbe, 0xe1, 0xa0, 0xae, 0xbd, 0x76, 0x96, 0x96, 0x47, 0x0d, 0x88,
-	0x9c, 0xa5, 0x45, 0x5d, 0x30, 0xc2, 0x88, 0xf8, 0x01, 0x0b, 0x19, 0x6e, 0xa7, 0x29, 0x92, 0xa5,
-	0xd4, 0x5e, 0x41, 0x9c, 0x05, 0xc9, 0x13, 0x55, 0x73, 0x18, 0x5f, 0x31, 0x6e, 0xd8, 0x16, 0x07,
-	0x63, 0x33, 0xb4, 0x21, 0xb4, 0x86, 0x86, 0xc3, 0x3c, 0x9a, 0xe6, 0x3b, 0x2e, 0x73, 0x99, 0x08,
-	0x8d, 0x38, 0x4a, 0x6e, 0xf5, 0x6b, 0x19, 0xb5, 0xe7, 0xdc, 0xfd, 0x91, 0xd6, 0xfa, 0xc5, 0xfe,
-	0x03, 0xc5, 0x0a, 0x7a, 0xe7, 0x04, 0x60, 0x85, 0x2c, 0x50, 0xe4, 0xbe, 0x3c, 0x68, 0x9a, 0xd9,
-	0x11, 0xab, 0xe8, 0x7d, 0x00, 0x0e, 0x78, 0x1b, 0x08, 0x94, 0x37, 0x22, 0x75, 0x3c, 0xe3, 0xef,
-	0xa8, 0xb1, 0x00, 0xca, 0x56, 0x4a, 0xad, 0x2f, 0x0f, 0x3e, 0x8c, 0xba, 0x24, 0x69, 0x88, 0xc4,
-	0x0d, 0x91, 0xb4, 0x21, 0x32, 0x65, 0x1e, 0x9d, 0xd4, 0xb7, 0x77, 0x3d, 0xc9, 0x4c, 0xd4, 0xf8,
-	0x33, 0x6a, 0x65, 0x93, 0xcc, 0xc4, 0xf3, 0xba, 0xa8, 0x7b, 0x7e, 0xa9, 0xab, 0x48, 0xc9, 0xb7,
-	0x69, 0x02, 0xf7, 0x19, 0xe5, 0xa0, 0xff, 0x45, 0x1f, 0xe7, 0xdc, 0x9d, 0xc6, 0x2d, 0x42, 0xa6,
-	0x30, 0xad, 0x10, 0x1e, 0x99, 0xa3, 0x83, 0x1a, 0x1e, 0x5d, 0x40, 0x94, 0x0e, 0x91, 0x1c, 0x30,
-	0x46, 0xf5, 0xc0, 0x0a, 0x41, 0x0c, 0xd0, 0x34, 0x45, 0xac, 0xf7, 0xd0, 0xa7, 0xd2, 0xe2, 0x39,
-	0xfa, 0x6f, 0x7f, 0xf1, 0x7a, 0xf4, 0x62, 0xf1, 0x23, 0xfd, 0xa7, 0xa0, 0xcf, 0xe0, 0x02, 0x5e,
-	0x46, 0x4f, 0x49, 0xc5, 0x42, 0x19, 0x69, 0x74, 0x53, 0x43, 0xb5, 0x39, 0x77, 0xf1, 0x3f, 0xd4,
-	0x3a, 0xff, 0x2d, 0x3a, 0xc9, 0x7f, 0x56, 0x92, 0xb7, 0x4a, 0xfd, 0xfa, 0xb4, 0x26, 0x03, 0x61,
-	0x8a, 0x70, 0x89, 0x97, 0x5f, 0x4a, 0x2b, 0x14, 0x85, 0xaa, 0xf1, 0x4c, 0xe1, 0x29, 0xaf, 0xc4,
-	0xbd, 0x72, 0x5e, 0x51, 0x58, 0xc1, 0xab, 0xb6, 0x2c, 0xe6, 0x95, 0xf8, 0x55, 0xce, 0x2b, 0x0a,
-	0x2b, 0x78, 0xd5, 0xc6, 0x4d, 0xc6, 0xdb, 0xbd, 0x26, 0xef, 0xf6, 0x9a, 0x7c, 0xbf, 0xd7, 0xe4,
-	0xab, 0x83, 0x26, 0xed, 0x0e, 0x9a, 0x74, 0x7b, 0xd0, 0xa4, 0x3f, 0x5d, 0x7b, 0xfd, 0x2d, 0x59,
-	0x2a, 0xd1, 0xc9, 0x0e, 0xba, 0xf4, 0x81, 0xdb, 0x6f, 0xc5, 0x7a, 0x18, 0x3f, 0x04, 0x00, 0x00,
-	0xff, 0xff, 0xfa, 0x55, 0xdf, 0x83, 0xa4, 0x04, 0x00, 0x00,
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x94, 0xcf, 0xaa, 0xd3, 0x40,
+	0x14, 0xc6, 0x1b, 0x9b, 0x5e, 0xf5, 0xc0, 0x85, 0xcb, 0x50, 0x25, 0x0d, 0x38, 0x95, 0x20, 0x28,
+	0x82, 0x09, 0xb5, 0x6f, 0xe0, 0x1f, 0x5c, 0x75, 0x13, 0x74, 0xe3, 0x46, 0x26, 0xe9, 0x21, 0x0d,
+	0x36, 0x33, 0x21, 0x33, 0x29, 0x11, 0x5f, 0xc2, 0x07, 0xf0, 0x39, 0x7c, 0x06, 0x97, 0x5d, 0xba,
+	0x94, 0xf6, 0x45, 0xa4, 0x93, 0xa4, 0xa4, 0xf9, 0xa3, 0x82, 0x0b, 0x77, 0xe7, 0x9c, 0xef, 0x9b,
+	0xf9, 0x7d, 0x70, 0x86, 0x81, 0x59, 0x90, 0x87, 0x1b, 0x16, 0x73, 0x0f, 0x8b, 0x70, 0xc3, 0x78,
+	0x84, 0x9e, 0x2a, 0xdc, 0x34, 0x13, 0x4a, 0x90, 0x9b, 0x4a, 0x72, 0x6b, 0xc9, 0x9e, 0x77, 0xcc,
+	0x75, 0x51, 0x1e, 0xb1, 0x69, 0x28, 0x64, 0x22, 0xa4, 0x17, 0x30, 0x89, 0xde, 0x6e, 0x11, 0xa0,
+	0x62, 0x0b, 0x2f, 0x14, 0x31, 0xaf, 0xf4, 0x69, 0x24, 0x22, 0xa1, 0x4b, 0xef, 0x54, 0x95, 0x53,
+	0xe7, 0xab, 0x01, 0x37, 0x2b, 0x19, 0xbd, 0xae, 0xee, 0x7a, 0x2b, 0x3e, 0x22, 0x27, 0x16, 0xdc,
+	0x0e, 0x33, 0x64, 0x4a, 0x64, 0x96, 0xf1, 0xd0, 0x78, 0x72, 0xd7, 0xaf, 0x5b, 0x62, 0xc3, 0x9d,
+	0x0c, 0x43, 0x8c, 0x77, 0x98, 0x59, 0xb7, 0xb4, 0x74, 0xee, 0xc9, 0x14, 0x26, 0x6b, 0xe4, 0x22,
+	0xb1, 0xc6, 0x5a, 0x28, 0x1b, 0x72, 0x1f, 0xae, 0x58, 0x22, 0x72, 0xae, 0x2c, 0x53, 0x8f, 0xab,
+	0x8e, 0x3c, 0x82, 0x6b, 0x6c, 0x42, 0xad, 0x89, 0x96, 0x2f, 0x87, 0x8e, 0x0d, 0x56, 0x3b, 0x9d,
+	0x8f, 0x32, 0x15, 0x5c, 0xa2, 0xf3, 0x19, 0xee, 0xad, 0x64, 0xf4, 0xf2, 0x94, 0x0c, 0x6b, 0x87,
+	0xcf, 0x14, 0xfe, 0x26, 0xfe, 0x14, 0x26, 0x31, 0x5f, 0x63, 0x51, 0x65, 0x2f, 0x1b, 0x42, 0xc0,
+	0xcc, 0x98, 0x42, 0x9d, 0xdb, 0xf4, 0x75, 0x4d, 0x28, 0x40, 0x92, 0x6f, 0x55, 0x9c, 0x6e, 0x63,
+	0xcc, 0x74, 0x74, 0xd3, 0x6f, 0x4c, 0x9c, 0x39, 0x3c, 0xe8, 0x85, 0xb7, 0xd2, 0xbd, 0x4b, 0xd7,
+	0xff, 0x2f, 0x5d, 0x17, 0x7e, 0x4e, 0xf7, 0x46, 0xa7, 0x7b, 0x85, 0x5b, 0xfc, 0xb7, 0x74, 0x15,
+	0xa9, 0x7b, 0x51, 0x4d, 0x7a, 0xfe, 0x6d, 0x0c, 0xe3, 0x95, 0x8c, 0xc8, 0x07, 0xb8, 0xbe, 0x7c,
+	0x64, 0x8e, 0xdb, 0x7e, 0xe3, 0x6e, 0x7b, 0xd5, 0xf6, 0xd3, 0x3f, 0x7b, 0x6a, 0x10, 0xe1, 0x40,
+	0x7a, 0xde, 0xc2, 0xe3, 0xde, 0x1b, 0xba, 0x46, 0xdb, 0xfb, 0x4b, 0x63, 0x93, 0xd7, 0xb3, 0xdd,
+	0x7e, 0x5e, 0xd7, 0x38, 0xc0, 0x1b, 0x5e, 0xd9, 0x89, 0xd7, 0xb3, 0xaf, 0x7e, 0x5e, 0xd7, 0x38,
+	0xc0, 0x1b, 0x5e, 0xdc, 0x8b, 0xe5, 0xf7, 0x03, 0x35, 0xf6, 0x07, 0x6a, 0xfc, 0x3c, 0x50, 0xe3,
+	0xcb, 0x91, 0x8e, 0xf6, 0x47, 0x3a, 0xfa, 0x71, 0xa4, 0xa3, 0xf7, 0xb3, 0x20, 0x7f, 0x56, 0xfe,
+	0x45, 0x45, 0xe3, 0xeb, 0xfa, 0x94, 0xa2, 0x0c, 0xae, 0xf4, 0xaf, 0xb2, 0xfc, 0x15, 0x00, 0x00,
+	0xff, 0xff, 0x73, 0x2b, 0x48, 0x02, 0xdb, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -665,23 +689,27 @@ func (m *MsgExchangeToken) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.ExchangeDenom) > 0 {
-		i -= len(m.ExchangeDenom)
-		copy(dAtA[i:], m.ExchangeDenom)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.ExchangeDenom)))
+	if len(m.ExchangeToken) > 0 {
+		i -= len(m.ExchangeToken)
+		copy(dAtA[i:], m.ExchangeToken)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.ExchangeToken)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	if len(m.Amount) > 0 {
+		i -= len(m.Amount)
+		copy(dAtA[i:], m.Amount)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Amount)))
 		i--
 		dAtA[i] = 0x22
 	}
-	{
-		size, err := m.Denom.MarshalToSizedBuffer(dAtA[:i])
-		if err != nil {
-			return 0, err
-		}
-		i -= size
-		i = encodeVarintTx(dAtA, i, uint64(size))
+	if len(m.Denom) > 0 {
+		i -= len(m.Denom)
+		copy(dAtA[i:], m.Denom)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Denom)))
+		i--
+		dAtA[i] = 0x1a
 	}
-	i--
-	dAtA[i] = 0x1a
 	if len(m.Receiver) > 0 {
 		i -= len(m.Receiver)
 		copy(dAtA[i:], m.Receiver)
@@ -742,12 +770,15 @@ func (m *MsgCreateExchangeRate) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.Rate) > 0 {
-		i -= len(m.Rate)
-		copy(dAtA[i:], m.Rate)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Rate)))
+	if m.Multiplier != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Multiplier))
 		i--
-		dAtA[i] = 0x1a
+		dAtA[i] = 0x20
+	}
+	if m.Rate != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Rate))
+		i--
+		dAtA[i] = 0x18
 	}
 	if len(m.Index) > 0 {
 		i -= len(m.Index)
@@ -809,12 +840,15 @@ func (m *MsgUpdateExchangeRate) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if len(m.Rate) > 0 {
-		i -= len(m.Rate)
-		copy(dAtA[i:], m.Rate)
-		i = encodeVarintTx(dAtA, i, uint64(len(m.Rate)))
+	if m.Multiplier != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Multiplier))
 		i--
-		dAtA[i] = 0x1a
+		dAtA[i] = 0x20
+	}
+	if m.Rate != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Rate))
+		i--
+		dAtA[i] = 0x18
 	}
 	if len(m.Index) > 0 {
 		i -= len(m.Index)
@@ -941,9 +975,15 @@ func (m *MsgExchangeToken) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = m.Denom.Size()
-	n += 1 + l + sovTx(uint64(l))
-	l = len(m.ExchangeDenom)
+	l = len(m.Denom)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.Amount)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	l = len(m.ExchangeToken)
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
@@ -973,9 +1013,11 @@ func (m *MsgCreateExchangeRate) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.Rate)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
+	if m.Rate != 0 {
+		n += 1 + sovTx(uint64(m.Rate))
+	}
+	if m.Multiplier != 0 {
+		n += 1 + sovTx(uint64(m.Multiplier))
 	}
 	return n
 }
@@ -1003,9 +1045,11 @@ func (m *MsgUpdateExchangeRate) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovTx(uint64(l))
 	}
-	l = len(m.Rate)
-	if l > 0 {
-		n += 1 + l + sovTx(uint64(l))
+	if m.Rate != 0 {
+		n += 1 + sovTx(uint64(m.Rate))
+	}
+	if m.Multiplier != 0 {
+		n += 1 + sovTx(uint64(m.Multiplier))
 	}
 	return n
 }
@@ -1148,7 +1192,7 @@ func (m *MsgExchangeToken) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Denom", wireType)
 			}
-			var msglen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1158,28 +1202,27 @@ func (m *MsgExchangeToken) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthTx
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthTx
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.Denom.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
+			m.Denom = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ExchangeDenom", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Amount", wireType)
 			}
 			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
@@ -1207,7 +1250,39 @@ func (m *MsgExchangeToken) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ExchangeDenom = string(dAtA[iNdEx:postIndex])
+			m.Amount = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ExchangeToken", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ExchangeToken = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -1374,10 +1449,10 @@ func (m *MsgCreateExchangeRate) Unmarshal(dAtA []byte) error {
 			m.Index = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
-			if wireType != 2 {
+			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Rate", wireType)
 			}
-			var stringLen uint64
+			m.Rate = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1387,24 +1462,30 @@ func (m *MsgCreateExchangeRate) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				m.Rate |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Multiplier", wireType)
 			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
+			m.Multiplier = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Multiplier |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Rate = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])
@@ -1570,10 +1651,10 @@ func (m *MsgUpdateExchangeRate) Unmarshal(dAtA []byte) error {
 			m.Index = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
-			if wireType != 2 {
+			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Rate", wireType)
 			}
-			var stringLen uint64
+			m.Rate = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowTx
@@ -1583,24 +1664,30 @@ func (m *MsgUpdateExchangeRate) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
+				m.Rate |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTx
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Multiplier", wireType)
 			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTx
+			m.Multiplier = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Multiplier |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
 			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Rate = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTx(dAtA[iNdEx:])

@@ -4,14 +4,16 @@ import (
 	"bu-chain/x/goldoracle/types"
 	"context"
 
-	"github.com/bandprotocol/bandchain-packet/obi"
+	"github.com/bandprotocol/chain/v2/pkg/obi"
+
+	pkg "github.com/bandprotocol/bandchain-packet/packet"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	clienttypes "github.com/cosmos/ibc-go/v5/modules/core/02-client/types"
 )
 
 type Calldata struct {
-	symbol     []string
-	multiplier uint64
+	Symbol     []string
+	Multiplier uint64
 }
 
 const (
@@ -25,22 +27,13 @@ const (
 
 func (k msgServer) SendReqGoldPrice(goCtx context.Context, msg *types.MsgSendReqGoldPriceRequest) (*types.MsgSendReqGoldPriceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
-
-	// Constructing packet
-	var packet types.OracleRequestPacketData
-
 	calldata := Calldata{
-		symbol:     []string{"XAU"},
-		multiplier: 1e6,
+		Symbol:     []string{"XAU"},
+		Multiplier: 1e6,
 	}
-	packet.ClientID = clientID
-	packet.OracleScriptID = oracleScriptID
-	packet.Calldata = string(obi.MustEncode(calldata))
-	packet.AskCount = askCount
-	packet.MinCount = minCount
-	packet.FeeLimit = sdk.NewInt64Coin("uband", 100000)
-	packet.PrepareGas = prepareGas
-	packet.ExecuteGas = executeGas
+
+	coins := sdk.NewCoins(sdk.NewCoin("uband", sdk.NewInt(100000)))
+	packet := pkg.NewOracleRequestPacketData(clientID, oracleScriptID, obi.MustEncode(calldata), askCount, minCount, coins, prepareGas, executeGas)
 
 	// Transmit the packet
 	err := k.TransmitOraclePacket(

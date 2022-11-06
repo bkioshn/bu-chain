@@ -1,6 +1,8 @@
 package types
 
 import (
+	"strconv"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
@@ -9,12 +11,13 @@ const TypeMsgExchangeToken = "exchange_token"
 
 var _ sdk.Msg = &MsgExchangeToken{}
 
-func NewMsgExchangeToken(creator string, receiver string, denom sdk.Coin, exchangeDenom string) *MsgExchangeToken {
+func NewMsgExchangeToken(creator string, receiver string, denom string, amount string, exchangeToken string) *MsgExchangeToken {
 	return &MsgExchangeToken{
 		Creator:       creator,
 		Receiver:      receiver,
 		Denom:         denom,
-		ExchangeDenom: exchangeDenom,
+		Amount:        amount,
+		ExchangeToken: exchangeToken,
 	}
 }
 
@@ -50,12 +53,12 @@ func (msg *MsgExchangeToken) ValidateBasic() error {
 		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid receiver address (%s)", errReceiver)
 	}
 
-	amount, _ := sdk.ParseCoinsNormalized(msg.Denom.String())
-	if !amount.IsValid() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "denom is not a valid Coins object")
+	amount, err := strconv.ParseUint(msg.Amount, 0, 64)
+	if err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "amount is not uint", err)
 	}
-	if amount.Empty() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "denom amount is empty")
+	if amount == 0 {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "denom amount is 0")
 	}
 
 	return nil

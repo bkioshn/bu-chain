@@ -2,11 +2,12 @@ package keeper
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"math"
 	"strconv"
 	"strings"
 
+	appparams "bu-chain/app/params"
 	"bu-chain/x/exchange/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -28,50 +29,54 @@ func (k msgServer) ExchangeToken(goCtx context.Context, msg *types.MsgExchangeTo
 		return nil, err
 	}
 
-	amount := sdk.NewCoins(msg.Denom)
+	uMultiplier := 1e6
+	uDenom := "u" + strings.ToLower(msg.Denom)
+	denomAmount, err := strconv.ParseFloat(msg.Amount, 64)
 
-	exchangePair := msg.Denom.Denom + "-" + msg.ExchangeDenom
-	rate, isFound := k.GetExchangeRate(ctx, exchangePair)
-	exRate, err := strconv.ParseFloat(rate.Rate, 64)
+	if err != nil {
+		return nil, err
+	}
 
-	if strings.Compare(msg.Denom.Denom, msg.ExchangeDenom) == 1 {
-		exchangePair = msg.ExchangeDenom + "-" + msg.Denom.Denom
-		rate, isFound = k.GetExchangeRate(ctx, exchangePair)
+	uDenomAmount := denomAmount * uMultiplier
+	denomCoin := sdk.NewCoins(sdk.NewCoin(uDenom, sdk.NewInt(int64(uDenomAmount))))
+
+	exchangePair := msg.Denom + "-" + msg.ExchangeToken
+	var tokenReceivedAmount uint64
+	if msg.Denom == appparams.DisplayDenom {
+		exchangePair = msg.ExchangeToken + "-" + msg.Denom
+		rate, isFound := k.GetExchangeRate(ctx, exchangePair)
 		if !isFound {
 			return nil, types.ErrTokenPairNotFound
 		}
-		exRate, err = strconv.ParseFloat(rate.Rate, 64)
-		if err != nil {
-			return nil, err
+		tokenReceivedAmount = uint64(uDenomAmount) * rate.Multiplier / rate.Rate
+	} else {
+		rate, isFound := k.GetExchangeRate(ctx, exchangePair)
+		if !isFound {
+			return nil, types.ErrTokenPairNotFound
 		}
-
-		exRate = 1 / exRate
-	}
-	if !isFound {
-		return nil, types.ErrTokenPairNotFound
-	}
-	if err != nil {
-		return nil, err
+		tokenReceivedAmount = uint64(denomAmount * float64(rate.Rate))
 	}
 
-	exRate64 := uint64(exRate * math.Pow10(3))
-
-	if !isFound {
-		return nil, types.ErrTokenPairNotFound
+	uExchangeToken := "u" + strings.ToLower(msg.ExchangeToken)
+	if k.bankKeeper.GetBalance(ctx, receiver, uExchangeToken).Amount.LT(sdk.NewInt(int64(tokenReceivedAmount))) {
+		return nil, errors.New("Receiver doen't have enough amount to exchange")
 	}
 
 	// Receiver get amount
-	err = k.bankKeeper.SendCoins(ctx, owner, receiver, amount)
+	err = k.bankKeeper.SendCoins(ctx, owner, receiver, denomCoin)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Printf("Owner send %f", uDenomAmount)
+
+	// Owner get amount
+	exchangeCoin := sdk.Coins{sdk.NewCoin(uExchangeToken, sdk.NewInt(int64(tokenReceivedAmount)))}
+	err = k.bankKeeper.SendCoins(ctx, receiver, owner, exchangeCoin)
 	if err != nil {
 		return nil, err
 	}
 
-	// Owner get amount
-	exchangeAmount := sdk.Coins{sdk.NewInt64Coin(msg.ExchangeDenom, msg.Denom.Amount.Int64()*int64(exRate64)/int64(math.Pow10(3)))}
-	err = k.bankKeeper.SendCoins(ctx, receiver, owner, exchangeAmount)
-	if err != nil {
-		return nil, err
-	}
+	fmt.Printf("Receiver send %d", tokenReceivedAmount)
 
 	return &types.MsgExchangeTokenResponse{}, nil
 }
@@ -79,39 +84,22 @@ func (k msgServer) ExchangeToken(goCtx context.Context, msg *types.MsgExchangeTo
 func (k msgServer) CreateExchangeRate(goCtx context.Context, msg *types.MsgCreateExchangeRate) (*types.MsgCreateExchangeRateResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	// Check whether the tokens is a pair or not
-	tokens := strings.Split(msg.Index, "-")
-	if len(tokens) != 2 {
-		return nil, types.ErrTokenShouldBePair
-	}
-
-	var key string
-	rate, err := strconv.ParseFloat(msg.Rate, 64)
-	if err != nil {
-		return nil, err
-	}
-
-	if strings.Compare(tokens[0], tokens[1]) == 1 {
-		key = tokens[1] + "-" + tokens[0]
-		rate = 1 / rate
-
-	} else {
-		key = tokens[0] + "-" + tokens[1]
-	}
-
+	key := msg.Index + "-" + appparams.DisplayDenom
 	// Check if the value already exists
 	_, isFound := k.GetExchangeRate(
 		ctx,
 		key, // msg.Index,
 	)
 	if isFound {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "index already set")
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "pair already set")
 	}
 
 	var exchangeRate = types.ExchangeRate{
-		Creator: msg.Creator,
-		Index:   key,
-		Rate:    fmt.Sprintf("%.3f", rate),
+		Creator:    msg.Creator,
+		Index:      key,
+		Rate:       msg.Rate,
+		Time:       uint64(ctx.BlockTime().Unix()),
+		Multiplier: msg.Multiplier,
 	}
 
 	k.SetExchangeRate(
@@ -124,13 +112,15 @@ func (k msgServer) CreateExchangeRate(goCtx context.Context, msg *types.MsgCreat
 func (k msgServer) UpdateExchangeRate(goCtx context.Context, msg *types.MsgUpdateExchangeRate) (*types.MsgUpdateExchangeRateResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	key := msg.Index + "-" + appparams.DisplayDenom
+
 	// Check if the value exists
 	valFound, isFound := k.GetExchangeRate(
 		ctx,
-		msg.Index,
+		key,
 	)
 	if !isFound {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, "index not set")
+		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, "pair not set")
 	}
 
 	// Checks if the the msg creator is the same as the current owner
@@ -139,9 +129,11 @@ func (k msgServer) UpdateExchangeRate(goCtx context.Context, msg *types.MsgUpdat
 	}
 
 	var exchangeRate = types.ExchangeRate{
-		Creator: msg.Creator,
-		Index:   msg.Index,
-		Rate:    msg.Rate,
+		Creator:    msg.Creator,
+		Index:      key,
+		Rate:       msg.Rate,
+		Time:       uint64(ctx.BlockTime().Unix()),
+		Multiplier: msg.Multiplier,
 	}
 
 	k.SetExchangeRate(ctx, exchangeRate)
@@ -152,13 +144,14 @@ func (k msgServer) UpdateExchangeRate(goCtx context.Context, msg *types.MsgUpdat
 func (k msgServer) DeleteExchangeRate(goCtx context.Context, msg *types.MsgDeleteExchangeRate) (*types.MsgDeleteExchangeRateResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	key := msg.Index + "-" + appparams.DisplayDenom
 	// Check if the value exists
 	valFound, isFound := k.GetExchangeRate(
 		ctx,
-		msg.Index,
+		key,
 	)
 	if !isFound {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, "index not set")
+		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, "pair not set")
 	}
 
 	// Checks if the the msg creator is the same as the current owner
