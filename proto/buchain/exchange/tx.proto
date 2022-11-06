@@ -14,14 +14,14 @@ service Msg {
   rpc CreateExchangeRate(MsgCreateExchangeRate) returns (MsgCreateExchangeRateResponse);
   rpc UpdateExchangeRate(MsgUpdateExchangeRate) returns (MsgUpdateExchangeRateResponse);
   rpc DeleteExchangeRate(MsgDeleteExchangeRate) returns (MsgDeleteExchangeRateResponse);
-// this line is used by starport scaffolding # proto/tx/rpc
 }
 
 message MsgExchangeToken {
   string creator = 1;
   string receiver = 2;
-  cosmos.base.v1beta1.Coin denom = 3 [(gogoproto.nullable) = false];
-  string exchangeDenom = 4;
+  string denom = 3;
+  string amount = 4;
+  string exchangeToken = 5;
 }
 
 message MsgExchangeTokenResponse {
@@ -30,16 +30,16 @@ message MsgExchangeTokenResponse {
 message MsgCreateExchangeRate {
   string creator = 1;
   string index = 2;
-
-  string rate = 3;
+  uint64 rate = 3;
+  uint64 multiplier = 4;
 }
 message MsgCreateExchangeRateResponse {}
 
 message MsgUpdateExchangeRate {
   string creator = 1;
   string index = 2;
-
-  string rate = 3;
+  uint64 rate = 3;
+  uint64 multiplier = 4;
 }
 message MsgUpdateExchangeRateResponse {}
 
@@ -48,5 +48,3 @@ message MsgDeleteExchangeRate {
   string index = 2;
 }
 message MsgDeleteExchangeRateResponse {}
-
-// this line is used by starport scaffolding # proto/tx/message

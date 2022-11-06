@@ -74,7 +74,7 @@ message QueryExchangeAmountRequest {
 }
 
 message QueryExchangeAmountResponse {
-	uint64 amount = 1;
+	string amount = 1;
 }
 
 message QueryExchangePairsRequest {

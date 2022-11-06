@@ -13,7 +13,8 @@ message Params {
 
 message ExchangeRate {
   string index = 1; 
-  string rate = 2; 
+  uint64 rate = 2; 
   uint64 time = 3;  
   string creator = 4;
+  uint64 multiplier = 5;
 }
