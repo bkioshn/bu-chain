@@ -2,6 +2,6 @@ package params
 
 const (
 	BondDenom    = "ububu"
-	DisplayDenom = "bubu"
+	DisplayDenom = "BUBU"
 	Exponent     = 3
 )

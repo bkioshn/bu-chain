@@ -16,9 +16,9 @@ echo "genre window palace raccoon youth else wear receive orange heart urge usag
 
 
 # add accounts to genesis
-bu-chaind add-genesis-account alice 10000000000000${DENOM},100000000ngum --keyring-backend test
-bu-chaind add-genesis-account bob 10000000000000${DENOM} --keyring-backend test
-bu-chaind add-genesis-account bu-key 10000000000000${DENOM} --keyring-backend test
+bu-chaind add-genesis-account alice 10000000000000000000${DENOM} --keyring-backend test
+bu-chaind add-genesis-account bob 1000000000000000000000${DENOM},100000000000000000000000uuax --keyring-backend test
+bu-chaind add-genesis-account bu-key 100000000000000000000${DENOM} --keyring-backend test
 
 # register initial validators
 bu-chaind gentx alice 100000000${DENOM} \
