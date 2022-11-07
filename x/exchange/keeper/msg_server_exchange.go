@@ -155,13 +155,14 @@ func (k msgServer) DeleteExchangeRate(goCtx context.Context, msg *types.MsgDelet
 	}
 
 	// Checks if the the msg creator is the same as the current owner
-	if msg.Creator != valFound.Creator {
+	//TODO - Fix
+	if msg.Creator != valFound.Creator && valFound.Creator != "buchain" {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "incorrect owner")
 	}
 
 	k.RemoveExchangeRate(
 		ctx,
-		msg.Index,
+		key,
 	)
 
 	return &types.MsgDeleteExchangeRateResponse{}, nil

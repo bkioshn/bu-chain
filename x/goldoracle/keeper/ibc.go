@@ -71,6 +71,7 @@ func (k Keeper) OnRecvOraclePacket(ctx sdk.Context, packet channeltypes.Packet, 
 	obi.MustDecode(data.Result, &result)
 	exchangePair := "XAU-BUBU"
 	curTime := uint64(ctx.BlockTime().Unix())
+	//TODO - Creator should be something else
 	var exchangeRate = exchangetypes.ExchangeRate{
 		Creator:    data.ClientID,
 		Index:      exchangePair,
